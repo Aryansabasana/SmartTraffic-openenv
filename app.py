@@ -39,7 +39,7 @@ with gr.Blocks(theme=gr.themes.Soft()) as interface:
         with gr.Column(scale=1):
             pass
             
-    gr.HTML("<p style='text-align: center; color: gray; font-size: 1.0em; margin: 10px 0 20px 0; font-weight: 500;'>Click to simulate AI-driven traffic optimization across difficulty levels.</p>")
+    gr.HTML("<p style='text-align: center; color: gray; font-size: 1.0em; margin: 2px 0 12px 0; font-weight: 500;'>Click to simulate AI-driven traffic optimization across difficulty levels.</p>")
             
     gr.Markdown("""
     <div style='background-color: #ffeaea; border-left: 4px solid #ff4d4f; padding: 12px; margin: 15px 0px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);'>
