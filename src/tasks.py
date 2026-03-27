@@ -17,19 +17,27 @@ class BaseTask:
         return self.env.state()
         
     def evaluate(self) -> float:
-        expected_cleared = self.env.max_time * 2.5 * 2 
+        total_arrived = self.env.total_cleared + max(0,
+            self.env.north + self.env.south + self.env.east + self.env.west)
+
+        # If no cars ever arrived (zero-traffic scenario), score as near perfect
+        if total_arrived == 0 and self.env.total_cleared == 0:
+            return 1.0
+
+        expected_cleared = self.env.max_time * 2.5 * 2
         clear_score = min(1.0, self.env.total_cleared / max(1, expected_cleared))
-        
+
+        # Weight average wait time more heavily (penalises congestion properly)
         avg_wait = self.env.total_waiting_time / max(1, self.env.total_cleared)
-        wait_score = max(0.0, 1.0 - (avg_wait / 20.0))
-        
+        wait_score = max(0.0, 1.0 - (avg_wait / 10.0))   # tighter: full penalty at 10s avg
+
         if self.config.get("emergency_prob", 0) > 0:
             handled = self.env.emergencies_handled
             em_score = min(1.0, handled / max(1, handled)) if handled > 0 else 0.5
-            total = (clear_score * 0.4) + (wait_score * 0.4) + (em_score * 0.2)
+            total = (clear_score * 0.35) + (wait_score * 0.45) + (em_score * 0.2)
         else:
-            total = (clear_score * 0.5) + (wait_score * 0.5)
-            
+            total = (clear_score * 0.40) + (wait_score * 0.60)  # wait dominates
+
         return min(1.0, max(0.0, total))
 
 class EasyTask(BaseTask):
