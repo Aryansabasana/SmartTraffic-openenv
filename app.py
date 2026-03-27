@@ -33,14 +33,23 @@ with gr.Blocks(theme=gr.themes.Soft()) as interface:
     
     with gr.Row():
         with gr.Column(scale=1):
+            pass
+        with gr.Column(scale=2, min_width=320):
             seed_input = gr.Textbox(label="Optional Seed (Empty for Random)", placeholder="e.g. 42")
-        with gr.Column(scale=2, min_width=300):
             run_btn = gr.Button("🚀 Run Traffic Evaluator", variant="primary", size="lg")
+            gr.HTML("""
+                <p style='
+                    text-align: center;
+                    color: rgba(100, 100, 100, 0.75);
+                    font-size: 0.88em;
+                    margin: 4px 0 16px 0;
+                    font-weight: 400;
+                    letter-spacing: 0.01em;
+                '>Click to simulate AI-driven traffic optimization across difficulty levels.</p>
+            """)
         with gr.Column(scale=1):
             pass
-            
-    gr.HTML("<p style='text-align: center; color: gray; font-size: 1.0em; margin: 2px 0 12px 0; font-weight: 500;'>Click to simulate AI-driven traffic optimization across difficulty levels.</p>")
-            
+
     gr.Markdown("""
     <div style='background-color: #ffeaea; border-left: 4px solid #ff4d4f; padding: 12px; margin: 15px 0px; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);'>
         <span style='color: #a8071a; font-weight: 600; font-size: 1.05em;'>🚨 Active Protocol:</span> 
