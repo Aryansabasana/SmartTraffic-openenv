@@ -1,0 +1,29 @@
+version: "1.0"
+environment:
+  name: "Smart Traffic Optimization Environment"
+  id: "OpenEnv-SmartTrafficOptim-v0"
+  description: "A production-ready simulation of a busy 4-way intersection mapping dynamic queue influxes to signal control to optimize wait times and clear emergencies."
+  
+action_space:
+  type: "Discrete"
+  size: 3
+  actions:
+    0: "All Red (pause signals for safety switching)"
+    1: "Green North-South"
+    2: "Green East-West"
+    
+observation_space:
+  type: "Dict"
+  schema:
+    north_queue: "Int"
+    south_queue: "Int"
+    east_queue: "Int"
+    west_queue: "Int"
+    current_signal: "String"  # 'red', 'green_ns', 'green_ew'
+    waiting_time_total: "Float"
+    emergency_vehicle_present: "Boolean"
+    time_step: "Int"
+    
+reward_type:
+  type: "Dense"
+  description: "Rewards for clearing vehicles (+2/vehicle) and clearing emergencies (+10). Constant penalty driven by cumulative current wait lines and base timer (-0.1/step)."
