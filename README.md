@@ -3,9 +3,7 @@ title: Smart Traffic Optimization
 emoji: 🚦
 colorFrom: green
 colorTo: red
-sdk: gradio
-sdk_version: 4.44.1
-app_file: app.py
+sdk: docker
 pinned: false
 ---
 
