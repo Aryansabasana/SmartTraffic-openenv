@@ -3,7 +3,8 @@ title: Smart Traffic Optimization
 emoji: 🚦
 colorFrom: green
 colorTo: red
-sdk: docker
+sdk: gradio
+sdk_version: 4.44.1
 app_file: app.py
 pinned: false
 ---
@@ -13,7 +14,7 @@ pinned: false
 > **A production-ready OpenEnv simulation framework for dynamic traffic signal orchestration, emergency vehicle routing, and queue optimization.**
 
 ## 🚀 Live Demo
-[View the Interactive Simulation on Hugging Face Spaces](https://huggingface.co/spaces/AryanSabasana/smartTraffic-openenv) *(Placeholder Link)*
+👉 https://huggingface.co/spaces/AryanSabasana/smartTraffic-openenv
 
 ## 🎯 Key Features
 * **Adaptive Signal Timing:** Dynamically scales green lights based on immediate queue volume.
@@ -22,7 +23,7 @@ pinned: false
 * **Deterministic Evaluation:** Ensures standardized performance testing across seeded environments.
 
 ## ⚡ Quick Start
-Get the simulation up and running in under a minute.
+This command runs all difficulty levels (Easy, Medium, Hard) and prints performance metrics and final scores.
 
 ```bash
 # Clone the repository
@@ -122,7 +123,7 @@ Unlike simple grid-worlds, this system enforces constraints common in actual phy
 * **System Oscillations**: Changing lights requires cooldowns, accurately preventing logical flickering.
 
 ## 10. Performance Results
-By optimizing the routing algorithm away from simple size-comparisons toward multi-layered, stability-controlled metrics, the AI consistently achieves a **>0.95 / 1.00 Overall Score.** 
+By optimizing the routing algorithm away from simple size-comparisons toward multi-layered, stability-controlled metrics, the AI consistently achieves a **~0.93 – 0.96 overall score (varies by seed)** 
 
 | Difficulty | Baseline Score | Optimized Agent |
 |------------|----------------|-----------------|
@@ -156,3 +157,4 @@ OpenEnv/
 │   └── agent.py         # Priority-based heuristic logic
 └── .dockerignore        # Build caching optimization
 ```
+
