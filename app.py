@@ -25,7 +25,7 @@ def run_simulation(manual_seed=None):
 
 with gr.Blocks(theme=gr.themes.Soft()) as interface:
     gr.Markdown("# 🚦 Smart Traffic Optimization Environment (OpenEnv)")
-    gr.Markdown("Welcome to the Interactive Traffic Simulator. Watch as our heuristic AI resolves catastrophic urban gridlock.")
+    gr.Markdown("Welcome to the Traffic Simulator. Watch how our AI improves traffic flow in real time.")
     
     with gr.Row():
         with gr.Column(scale=1):
