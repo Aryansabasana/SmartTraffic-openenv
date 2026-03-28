@@ -38,6 +38,8 @@ class TrafficEnv:
         
         self.prev_ns_total = 0
         self.prev_ew_total = 0
+        self.ns_wait_time = 0.0
+        self.ew_wait_time = 0.0
         self.reward_trends = []
         
         return self.state()
@@ -58,7 +60,9 @@ class TrafficEnv:
             time_step=self.time_step,
             ns_growth=ns_growth,
             ew_growth=ew_growth,
-            emergency_direction=self.emergency_direction_str
+            emergency_direction=self.emergency_direction_str,
+            ns_wait_time=self.ns_wait_time,
+            ew_wait_time=self.ew_wait_time
         )
         
     def step(self, action_idx: int) -> StepResult:
@@ -81,10 +85,12 @@ class TrafficEnv:
             self.current_signal = "green_ew"
             
         if prev_signal != self.current_signal and prev_signal != "red":
-            reward -= 1.0 
+            reward -= 0.5 
             
-        total_waiting = self.north + self.south + self.east + self.west
-        reward -= (total_waiting * 0.1)
+        ns_total = self.north + self.south
+        ew_total = self.east + self.west
+        total_waiting = ns_total + ew_total
+        reward -= (total_waiting * 0.15)
         
         self.waiting_time_total += total_waiting
         self.total_waiting_time += total_waiting
@@ -93,7 +99,8 @@ class TrafficEnv:
             self.emergency_response_time += 1
             reward -= 0.5            
         cleared_this_step = 0
-        clearance_capacity = 8        emergency_cleared = False
+        clearance_capacity = 8
+        emergency_cleared = False
         
         if self.current_signal == "green_ns":
             c_n = min(self.north, clearance_capacity)
@@ -114,16 +121,31 @@ class TrafficEnv:
                 emergency_cleared = True
                 
         self.total_cleared += cleared_this_step
-        reward += cleared_this_step * 0.5
+        reward += cleared_this_step * 0.75
+        
+        if self.current_signal == "green_ns" and ns_total == 0:
+            reward -= 0.5
+        elif self.current_signal == "green_ew" and ew_total == 0:
+            reward -= 0.5
         
         if total_waiting > 0 and cleared_this_step == 0:
             reward -= 0.5
             
         if emergency_cleared:
-            reward += 10.0
+            reward += 15.0
             self.emergency_present = False
             self.emergency_direction_str = 'none'
             self.emergencies_handled += 1
+            
+        if ns_total > 0 and self.current_signal != "green_ns":
+            self.ns_wait_time += 1.0
+        else:
+            self.ns_wait_time = 0.0
+            
+        if ew_total > 0 and self.current_signal != "green_ew":
+            self.ew_wait_time += 1.0
+        else:
+            self.ew_wait_time = 0.0
             
         reward -= 0.1        
 

@@ -14,6 +14,8 @@ class State:
     ns_growth: float
     ew_growth: float
     emergency_direction: str
+    ns_wait_time: float
+    ew_wait_time: float
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -27,7 +29,9 @@ class State:
             "time_step": self.time_step,
             "ns_growth": self.ns_growth,
             "ew_growth": self.ew_growth,
-            "emergency_direction": self.emergency_direction
+            "emergency_direction": self.emergency_direction,
+            "ns_wait_time": self.ns_wait_time,
+            "ew_wait_time": self.ew_wait_time
         }
 
 @dataclass
