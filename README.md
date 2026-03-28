@@ -12,7 +12,7 @@ pinned: false
 > **A production-ready OpenEnv simulation framework for dynamic traffic signal orchestration, emergency vehicle routing, and queue optimization.**
 
 ## 🚀 Live Demo
-👉 https://huggingface.co/spaces/AryanSabasana/smartTraffic-openenv
+👉 https://huggingface.co/spaces/AryanSabasana/smart-traffic-openenv
 
 ## 🎯 Key Features
 * **Adaptive Signal Timing:** Dynamically scales green lights based on immediate queue volume.
