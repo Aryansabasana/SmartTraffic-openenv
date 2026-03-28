@@ -23,9 +23,10 @@ class BaseTask:
         if total_arrived == 0 and self.env.total_cleared == 0:
             return 1.0
 
-        # Replace early rounding / min(1.0) checks with actual theoretical scales
-        max_possible = self.env.max_time * self.config.get("arrival_rate", 2.0) * 4 * self.config.get("congestion_multiplier", 1.0)
-        clear_score = self.env.total_cleared / max(1.0, max_possible)
+        # Accurately map max clearance logic to prevent low-traffic penalties & high-traffic inflation.
+        expected_arrived = self.env.max_time * self.config.get("arrival_rate", 2.0) * 4 * self.config.get("congestion_multiplier", 1.0)
+        max_possible = min(float(total_arrived), float(expected_arrived))
+        clear_score = min(1.0, self.env.total_cleared / max(1.0, max_possible))
 
         avg_wait = self.env.total_waiting_time / max(1, self.env.total_cleared)
         max_wait = 30.0
