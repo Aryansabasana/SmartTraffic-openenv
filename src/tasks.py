@@ -20,23 +20,28 @@ class BaseTask:
         total_arrived = self.env.total_cleared + max(0,
             self.env.north + self.env.south + self.env.east + self.env.west)
 
-
         if total_arrived == 0 and self.env.total_cleared == 0:
             return 1.0
 
-        expected_cleared = self.env.max_time * 2.5 * 2
-        clear_score = min(1.0, self.env.total_cleared / max(1, expected_cleared))
-
+        # Replace early rounding / min(1.0) checks with actual theoretical scales
+        max_possible = self.env.max_time * self.config.get("arrival_rate", 2.0) * 4 * self.config.get("congestion_multiplier", 1.0)
+        clear_score = self.env.total_cleared / max(1.0, max_possible)
 
         avg_wait = self.env.total_waiting_time / max(1, self.env.total_cleared)
-        wait_score = max(0.0, 1.0 - (avg_wait / 10.0))
+        max_wait = 30.0
+        wait_score = max(0.0, 1.0 - (avg_wait / max_wait))
 
         if self.config.get("emergency_prob", 0) > 0:
             handled = self.env.emergencies_handled
-            em_score = min(1.0, handled / max(1, handled)) if handled > 0 else 0.5
-            total = (clear_score * 0.35) + (wait_score * 0.45) + (em_score * 0.2)
+            total_emergencies = self.env.total_emergencies_generated
+            
+            em_score = (handled / max(1, total_emergencies)) if total_emergencies > 0 else 1.0
+            
+            # User defined balanced score
+            total = (0.5 * clear_score) + (0.3 * wait_score) + (0.2 * em_score)
         else:
-            total = (clear_score * 0.40) + (wait_score * 0.60)  # wait dominates
+            # Rescaled symmetrically if no emergency component applies
+            total = (0.625 * clear_score) + (0.375 * wait_score)
 
         return min(1.0, max(0.0, total))
 
@@ -45,7 +50,7 @@ class EasyTask(BaseTask):
         super().__init__({
             "max_time": 100,
             "arrival_rate": 2.0,
-            "congestion_multiplier": 0.0,
+            "congestion_multiplier": 1.0,
             "emergency_prob": 0.0
         })
 
@@ -53,7 +58,7 @@ class MediumTask(BaseTask):
     def __init__(self):
         super().__init__({
             "max_time": 200,
-            "arrival_rate": 2.0,
+            "arrival_rate": 2.2,
             "congestion_multiplier": 1.5, 
             "emergency_prob": 0.0
         })
@@ -62,7 +67,7 @@ class HardTask(BaseTask):
     def __init__(self):
         super().__init__({
             "max_time": 300,
-            "arrival_rate": 1.5, 
-            "congestion_multiplier": 1.5, 
-            "emergency_prob": 0.05
+            "arrival_rate": 2.0, 
+            "congestion_multiplier": 1.75, 
+            "emergency_prob": 0.08
         })

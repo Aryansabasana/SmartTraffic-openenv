@@ -34,6 +34,7 @@ class TrafficEnv:
         self.total_waiting_time = 0.0
         self.emergency_response_time = 0
         self.emergencies_handled = 0
+        self.total_emergencies_generated = 0
         self.done = False
         
         self.prev_ns_total = 0
@@ -173,6 +174,7 @@ class TrafficEnv:
         if not self.emergency_present and random.random() < self.emergency_prob:
             self.emergency_present = True
             self.emergency_direction_str = random.choice(['ns', 'ew'])
+            self.total_emergencies_generated += 1
             
 
         reward += random.uniform(-0.1, 0.1)
@@ -187,6 +189,7 @@ class TrafficEnv:
             "total_cleared": self.total_cleared,
             "avg_waiting_time": self.total_waiting_time / max(1, self.total_cleared),
             "emergencies_handled": self.emergencies_handled,
+            "total_emergencies": self.total_emergencies_generated,
             "reward_trend_avg": sum(self.reward_trends[-10:]) / 10 if self.reward_trends else 0
         }
             
