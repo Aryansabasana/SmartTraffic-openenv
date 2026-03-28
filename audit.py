@@ -1,9 +1,4 @@
-"""
-=======================================================
-  SMART TRAFFIC SIMULATION - FULL AUDIT REPORT
-  Auditor: Automated Validation Suite
-=======================================================
-"""
+
 import random
 import sys
 import os
@@ -11,9 +6,7 @@ import re
 import ast
 import pathlib
 
-# ─────────────────────────────────────────────────────
-# Setup imports
-# ─────────────────────────────────────────────────────
+
 sys.path.insert(0, os.path.dirname(__file__))
 from src.tasks import EasyTask, MediumTask, HardTask
 from src.agent import DeterministicAgent
@@ -22,7 +15,6 @@ from src.models import State
 results = {}
 
 def run_single(seed=None):
-    """Run one full evaluation, return structured metrics."""
     if seed is None:
         seed = random.randint(1000, 99999)
     random.seed(seed)
@@ -67,9 +59,7 @@ def sep(title):
     print(f"{'='*55}")
 
 
-# ─────────────────────────────────────────────────────
-# TEST 1: SEED REPRODUCIBILITY
-# ─────────────────────────────────────────────────────
+
 sep("TEST 1: SEED REPRODUCIBILITY")
 seed = 42
 s1, sc1, m1 = run_single(seed)
@@ -89,9 +79,7 @@ else:
     results["Seed Reproducibility"] = "FAIL"
 
 
-# ─────────────────────────────────────────────────────
-# TEST 2: STOCHASTIC VARIABILITY
-# ─────────────────────────────────────────────────────
+
 sep("TEST 2: STOCHASTIC VARIABILITY (3 random runs)")
 runs = [run_single() for _ in range(3)]
 print(f"\n{'Run':<5} {'Seed':<8} {'Easy':<8} {'Medium':<9} {'Hard':<8} {'Overall':<10} {'Hard Cleared'}")
@@ -99,7 +87,7 @@ print("-" * 65)
 for i, (sd, sc, mx) in enumerate(runs, 1):
     print(f"  {i:<4} {sd:<8} {sc['Easy']:<8.4f} {sc['Medium']:<9.4f} {sc['Hard']:<8.4f} {sc['Overall']:<10.4f} {mx['Hard']['cleared']}")
 
-# Check any difference exists
+
 all_scores = [(r[1]['Easy'], r[1]['Medium'], r[1]['Hard']) for r in runs]
 unique_seeds = len(set(r[0] for r in runs)) == 3
 any_diff = len(set(s for s in [str(x) for x in all_scores])) > 1
@@ -112,13 +100,11 @@ else:
     results["Stochastic Variability"] = "FAIL"
 
 
-# ─────────────────────────────────────────────────────
-# TEST 3: NO HARDCODED VALUES
-# ─────────────────────────────────────────────────────
+
 sep("TEST 3: NO HARDCODED VALUES SCAN")
 SUSPECT_PATTERNS = [
-    r'\[0\.\d+,\s*0\.\d+,\s*0\.\d+',   # score arrays
-    r'return\s+0\.\d+\b',               # bare return 0.XX
+    r'\[0\.\d+,\s*0\.\d+,\s*0\.\d+',
+    r'return\s+0\.\d+\b',
 ]
 IGNORE_BLOCK_MARKER = '__name__'
 files = list(pathlib.Path('src').glob('*.py')) + [
@@ -127,7 +113,7 @@ files = list(pathlib.Path('src').glob('*.py')) + [
 all_ok = True
 for fp in files:
     content = fp.read_text(encoding='utf-8')
-    # Strip lines after if __name__ == "__main__"
+
     parts = content.split('if __name__')
     audit_content = parts[0]
     warnings = []
@@ -148,13 +134,11 @@ else:
     results["No Hardcoding"] = "FAIL"
 
 
-# ─────────────────────────────────────────────────────
-# TEST 4: METRIC CONSISTENCY
-# ─────────────────────────────────────────────────────
+
 sep("TEST 4: METRIC CONSISTENCY (Low vs High Traffic)")
 
-# LOW traffic run
-low_task = EasyTask()  # slow arrivals
+
+low_task = EasyTask()
 low_task.env.arrival_rate_base = 0.2
 state = low_task.reset(seed=100)
 agent_low = DeterministicAgent()
@@ -167,7 +151,7 @@ low_score = low_task.evaluate()
 low_cleared = r.info["total_cleared"]
 low_wait = r.info["avg_waiting_time"]
 
-# HIGH traffic run
+
 high_task = EasyTask()
 high_task.env.arrival_rate_base = 6.0
 state = high_task.reset(seed=100)
@@ -193,16 +177,14 @@ else:
     results["Metric Logic"] = "FAIL"
 
 
-# ─────────────────────────────────────────────────────
-# TEST 5: AGENT IMPACT TEST
-# ─────────────────────────────────────────────────────
+
 sep("TEST 5: AGENT IMPACT (Real vs Random Policy)")
 
-# Real agent
+
 _, real_scores, _ = run_single(seed=999)
 real_overall = real_scores["Overall"]
 
-# Random policy agent
+
 class RandomAgent:
     def get_action(self, state):
         return random.choice([1, 2])
@@ -244,12 +226,10 @@ else:
     results["Agent Impact"] = "FAIL"
 
 
-# ─────────────────────────────────────────────────────
-# TEST 6: EXTREME SCENARIOS
-# ─────────────────────────────────────────────────────
+
 sep("TEST 6: EXTREME SCENARIOS")
 
-# Case A: Zero traffic
+
 zero_task = EasyTask()
 zero_task.env.arrival_rate_base = 0.0
 state = zero_task.reset(seed=7)
@@ -261,7 +241,7 @@ while not done:
     done = r.done
 zero_score = zero_task.evaluate()
 
-# Case B: Extreme congestion
+
 cong_task = EasyTask()
 cong_task.env.arrival_rate_base = 10.0
 state = cong_task.reset(seed=7)
@@ -273,7 +253,7 @@ while not done:
     done = r.done
 cong_score = cong_task.evaluate()
 
-# Case C: Emergency priority vs no emergency
+
 from src.tasks import HardTask
 emg_task = HardTask()
 state = emg_task.reset(seed=77)
@@ -306,9 +286,7 @@ else:
     results["Extreme Cases"] = "FAIL"
 
 
-# ─────────────────────────────────────────────────────
-# TEST 7: GRAPH VALIDATION
-# ─────────────────────────────────────────────────────
+
 sep("TEST 7: GRAPH VALIDATION (Score ↔ Graph Consistency)")
 from visualize import generate_graph
 
@@ -320,7 +298,7 @@ out_b = "audit_graph_B.png"
 generate_graph(sc_a, 111, output_path=out_a)
 generate_graph(sc_b, 222, output_path=out_b)
 
-# Validate graph files contain different data by checking file sizes
+
 size_a = os.path.getsize(out_a)
 size_b = os.path.getsize(out_b)
 graph_files_exist = os.path.exists(out_a) and os.path.exists(out_b)
@@ -335,7 +313,7 @@ print(f"  Graph A size: {size_a} bytes | Graph B size: {size_b} bytes")
 print(f"  Scores differ across seeds: {values_match}")
 print(f"  Graph files generated: {graph_files_exist}")
 
-# Cleanup temp files
+
 for f in [out_a, out_b]:
     if os.path.exists(f): os.remove(f)
 
@@ -347,9 +325,7 @@ else:
     results["Graph Accuracy"] = "FAIL"
 
 
-# ─────────────────────────────────────────────────────
-# FINAL AUDIT SUMMARY
-# ─────────────────────────────────────────────────────
+
 sep("FINAL AUDIT SUMMARY")
 icon = {"PASS": "✅", "FAIL": "❌", "MARGINAL": "⚠️ "}
 for test, status in results.items():

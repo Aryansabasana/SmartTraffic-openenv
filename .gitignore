@@ -1,5 +1,7 @@
-*.pyc
 __pycache__/
+*.pyc
+stress_test_histogram.png
+stress_test_results.csv
+stress_test_timeseries.png
 optimization_results.png
-venv/
-.env
+.pytest_cache/

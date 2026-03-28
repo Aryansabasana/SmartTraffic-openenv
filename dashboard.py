@@ -1,8 +1,4 @@
-"""
-Traffic Optimization Benchmark Dashboard
------------------------------------------
-Compares performance of 3 agents across Easy / Medium / Hard traffic scenarios.
-"""
+
 
 import streamlit as st
 import matplotlib.pyplot as plt
@@ -16,21 +12,14 @@ sys.path.insert(0, os.path.dirname(__file__))
 from src.tasks import EasyTask, MediumTask, HardTask
 from src.models import State
 
-# ─────────────────────────────────────────────────────────────────
-# AGENT DEFINITIONS
-# ─────────────────────────────────────────────────────────────────
+
 
 class RandomAgent:
-    """Selects a random action every step — baseline chaos."""
     def get_action(self, state: State) -> int:
         return random.choice([1, 2])
 
 
 class FixedTimingAgent:
-    """
-    Naive Fixed-Timing Agent: alternates NS ↔ EW on a fixed 10-step timer.
-    Simulates traditional traffic light controllers.
-    """
     def __init__(self, cycle_length: int = 10):
         self.cycle_length = cycle_length
 
@@ -40,13 +29,6 @@ class FixedTimingAgent:
 
 
 class OptimizedAgent:
-    """
-    Pressure-Based Heuristic Agent with:
-    - Emergency override priority
-    - Starvation prevention
-    - Cooldown / oscillation prevention
-    - Growth-rate awareness
-    """
     def __init__(self):
         self.last_switch_time = 0
         self.min_green_time = 3
@@ -59,18 +41,15 @@ class OptimizedAgent:
         )
         time_since_switch = state.time_step - self.last_switch_time
 
-        # Emergency Override
         if state.emergency_vehicle_present and state.emergency_direction != 'none':
             em_idx = 1 if state.emergency_direction == 'ns' else 2
             if current_idx != em_idx:
                 self.last_switch_time = state.time_step
             return em_idx
 
-        # Cooldown enforcement
         if current_idx != 0 and time_since_switch < self.min_green_time:
             return current_idx
 
-        # Pressure calculation
         ns_pressure = ns_total + (state.ns_growth * 1.5)
         ew_pressure = ew_total + (state.ew_growth * 1.5)
         if ns_total > 30: ns_pressure += 20
@@ -102,15 +81,9 @@ TASK_CONSTRUCTORS = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────
-# CORE LOGIC
-# ─────────────────────────────────────────────────────────────────
+
 
 def run_agent(agent_type: str, difficulty: str, seed: int) -> dict:
-    """
-    Run a single agent on a single difficulty level.
-    Returns a dict with score, reward, cleared, avg_wait.
-    """
     random.seed(seed)
     np.random.seed(seed)
 
@@ -144,17 +117,12 @@ def run_agent(agent_type: str, difficulty: str, seed: int) -> dict:
 
 
 def compute_metrics(seed: int) -> dict:
-    """
-    Run all agents across all difficulties.
-    Returns nested dict: metrics[agent_name][difficulty] = {...}
-    """
     metrics = {}
     for agent_name in AGENTS:
         metrics[agent_name] = {}
         for i, difficulty in enumerate(TASK_CONSTRUCTORS):
             task_seed = seed + i * 999
             metrics[agent_name][difficulty] = run_agent(agent_name, difficulty, task_seed)
-        # Overall = mean of three difficulty scores
         scores = [metrics[agent_name][d]["score"] for d in TASK_CONSTRUCTORS]
         metrics[agent_name]["Overall"] = {
             "score":    round(sum(scores) / len(scores), 4),
@@ -165,9 +133,7 @@ def compute_metrics(seed: int) -> dict:
     return metrics
 
 
-# ─────────────────────────────────────────────────────────────────
-# VISUALISATIONS
-# ─────────────────────────────────────────────────────────────────
+
 
 COLORS = {
     "Random Agent":        "#FF6B6B",
@@ -177,7 +143,6 @@ COLORS = {
 
 
 def plot_bar_chart(metrics: dict):
-    """Grouped bar chart — agent scores per difficulty."""
     difficulties = list(TASK_CONSTRUCTORS.keys()) + ["Overall"]
     agents       = list(AGENTS.keys())
     x            = np.arange(len(difficulties))
@@ -209,7 +174,6 @@ def plot_bar_chart(metrics: dict):
 
 
 def plot_line_chart(metrics: dict):
-    """Line chart — performance trend across difficulty levels."""
     difficulties = ["Easy", "Medium", "Hard"]
     fig, ax = plt.subplots(figsize=(9, 4))
 
@@ -232,9 +196,7 @@ def plot_line_chart(metrics: dict):
     return fig
 
 
-# ─────────────────────────────────────────────────────────────────
-# STREAMLIT UI
-# ─────────────────────────────────────────────────────────────────
+
 
 def render():
     st.set_page_config(
@@ -243,7 +205,6 @@ def render():
         layout="wide",
     )
 
-    # Header
     st.markdown("""
         <h1 style='text-align: center; margin-bottom: 0;'>🚦 Traffic Optimization Benchmark Dashboard</h1>
         <p style='text-align: center; color: gray; font-size: 1.05em; margin-top: 4px;'>
@@ -252,7 +213,6 @@ def render():
         <hr style='margin: 10px 0 25px 0;'>
     """, unsafe_allow_html=True)
 
-    # Controls
     col_left, col_mid, col_right = st.columns([2, 2, 1])
     with col_left:
         seed_input = st.text_input("🎲 Seed (leave blank for random)", placeholder="e.g. 42")
@@ -268,7 +228,6 @@ def render():
 
         st.success("✅ Benchmark complete!")
 
-        # ── Score Table ─────────────────────────────────────────
         st.markdown("### 📊 Score Summary")
 
         rows = []
@@ -282,7 +241,6 @@ def render():
         df = pd.DataFrame(rows).set_index("Agent")
         st.dataframe(df.style.highlight_max(axis=0, color="#c6f6d5"), use_container_width=True)
 
-        # ── Detailed Metrics Table ───────────────────────────────
         st.markdown("### 🔍 Detailed Metrics (per Difficulty)")
         tabs = st.tabs(list(TASK_CONSTRUCTORS.keys()))
         for tab, difficulty in zip(tabs, TASK_CONSTRUCTORS):
@@ -302,7 +260,6 @@ def render():
                     use_container_width=True
                 )
 
-        # ── Charts ──────────────────────────────────────────────
         st.markdown("### 📈 Performance Charts")
         chart_col1, chart_col2 = st.columns([3, 2])
         with chart_col1:
@@ -310,7 +267,6 @@ def render():
         with chart_col2:
             st.pyplot(plot_line_chart(metrics))
 
-        # ── Insight callout ─────────────────────────────────────
         opt_overall = metrics["Optimized Agent"]["Overall"]["score"]
         rnd_overall = metrics["Random Agent"]["Overall"]["score"]
         gain = (opt_overall - rnd_overall) * 100

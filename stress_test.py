@@ -1,14 +1,4 @@
-"""
-===========================================================
-  Smart Traffic Optimization - Stress Test Suite
-  Runs N simulations with random seeds and validates
-  statistical stability, score distribution, and robustness.
-===========================================================
-Usage:
-  python stress_test.py              # 1000 runs, random seeds
-  python stress_test.py -n 500       # 500 runs
-  python stress_test.py --base-seed 42  # deterministic run sequence
-"""
+
 
 import argparse
 import csv
@@ -18,7 +8,7 @@ import sys
 import time
 
 import matplotlib
-matplotlib.use("Agg")  # headless backend for Hugging Face / server envs
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.gridspec as gridspec
 import numpy as np
@@ -28,9 +18,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 from src.tasks import EasyTask, MediumTask, HardTask
 from src.agent import DeterministicAgent
 
-# ─────────────────────────────────────────────────────────────────
-# CONFIG
-# ─────────────────────────────────────────────────────────────────
+
 
 TASK_MAP = {
     "Easy":   EasyTask,
@@ -39,12 +27,9 @@ TASK_MAP = {
 }
 
 
-# ─────────────────────────────────────────────────────────────────
-# SIMULATION RUNNER
-# ─────────────────────────────────────────────────────────────────
+
 
 def run_single(seed: int) -> dict:
-    """Run one evaluation with the given seed. Returns a flat metric dict."""
     random.seed(seed)
     np.random.seed(seed)
 
@@ -83,9 +68,7 @@ def run_single(seed: int) -> dict:
     return results
 
 
-# ─────────────────────────────────────────────────────────────────
-# STATISTICS
-# ─────────────────────────────────────────────────────────────────
+
 
 def compute_stats(values: np.ndarray, label: str) -> dict:
     return {
@@ -99,9 +82,7 @@ def compute_stats(values: np.ndarray, label: str) -> dict:
     }
 
 
-# ─────────────────────────────────────────────────────────────────
-# VISUALISATION
-# ─────────────────────────────────────────────────────────────────
+
 
 COLORS = {
     "Easy":    "#4ECDC4",
@@ -112,7 +93,6 @@ COLORS = {
 
 
 def plot_histograms(all_records: list, output_path: str):
-    """4-panel histogram grid — one per difficulty + overall."""
     metrics = ["Easy", "Medium", "Hard", "Overall"]
     fig, axes = plt.subplots(2, 2, figsize=(13, 9))
     axes = axes.flatten()
@@ -148,11 +128,10 @@ def plot_histograms(all_records: list, output_path: str):
 
 
 def plot_time_series(all_records: list, output_path: str):
-    """Line chart of overall score over runs — detects drift/instability."""
     scores = [r["overall_score"] for r in all_records]
     runs   = list(range(1, len(scores) + 1))
 
-    # Rolling mean (window = 50)
+
     window = min(50, len(scores) // 10)
     rolling = np.convolve(scores, np.ones(window) / window, mode="valid")
 
@@ -178,9 +157,7 @@ def plot_time_series(all_records: list, output_path: str):
     print(f"Time-series saved → {output_path}")
 
 
-# ─────────────────────────────────────────────────────────────────
-# CSV EXPORT
-# ─────────────────────────────────────────────────────────────────
+
 
 def save_csv(records: list, path: str):
     if not records:
@@ -193,38 +170,34 @@ def save_csv(records: list, path: str):
     print(f"CSV saved      → {path}")
 
 
-# ─────────────────────────────────────────────────────────────────
-# VALIDATION RULES
-# ─────────────────────────────────────────────────────────────────
+
 
 def validate(stats: dict, all_records: list) -> tuple[bool, list]:
     issues = []
     overall_scores = np.array([r["overall_score"] for r in all_records])
 
-    # Rule 1: Std dev must be non-zero
+
     if stats["std"] < 1e-6:
         issues.append("Std dev ≈ 0 → outputs are IDENTICAL across all runs (possible hardcoding)")
 
-    # Rule 2: Scores must be in [0, 1]
+
     if stats["min"] < 0 or stats["max"] > 1:
         issues.append(f"Scores out of range: min={stats['min']:.4f}, max={stats['max']:.4f}")
 
-    # Rule 3: No extreme spikes — check that >95% of scores are within 3σ of mean
+
     z_scores = np.abs((overall_scores - stats["mean"]) / max(stats["std"], 1e-9))
     extreme_runs = int((z_scores > 3).sum())
-    if extreme_runs > len(all_records) * 0.01:  # >1% of runs are extreme outliers
+    if extreme_runs > len(all_records) * 0.01:
         issues.append(f"{extreme_runs} extreme outliers detected (>3σ) — possible instability")
 
-    # Rule 4: Mean score must be above a sensible floor
+
     if stats["mean"] < 0.5:
         issues.append(f"Mean score {stats['mean']:.4f} < 0.5 — agent performing worse than chance")
 
     return (len(issues) == 0), issues
 
 
-# ─────────────────────────────────────────────────────────────────
-# MAIN
-# ─────────────────────────────────────────────────────────────────
+
 
 def main():
     parser = argparse.ArgumentParser(description="Stress test the Smart Traffic environment")
@@ -244,7 +217,7 @@ def main():
     print(f"  Runs: {N}  |  Base seed: {args.base_seed or 'random'}")
     print(f"{'='*55}\n")
 
-    # ── Run simulations ─────────────────────────────────────────
+
     all_records = []
     t0 = time.time()
 
@@ -257,7 +230,7 @@ def main():
     elapsed = time.time() - t0
     print(f"\nCompleted {N} runs in {elapsed:.1f}s  ({elapsed/N*1000:.1f} ms/run)\n")
 
-    # ── Statistics ──────────────────────────────────────────────
+
     overall_scores = np.array([r["overall_score"]  for r in all_records])
     easy_scores    = np.array([r["Easy_score"]      for r in all_records])
     medium_scores  = np.array([r["Medium_score"]    for r in all_records])
@@ -265,7 +238,7 @@ def main():
 
     overall_stats = compute_stats(overall_scores, "Overall")
 
-    # ── Report ──────────────────────────────────────────────────
+
     print(f"{'='*55}")
     print(f"  STRESS TEST REPORT")
     print(f"{'='*55}")
@@ -284,7 +257,7 @@ def main():
                                      np.percentile(hard_scores,95), np.percentile(overall_scores,95)])]:
         print(f"  {label:<18} {vals[0]:>8.4f} {vals[1]:>8.4f} {vals[2]:>8.4f} {vals[3]:>9.4f}")
 
-    # ── Validation ──────────────────────────────────────────────
+
     print()
     stable, issues = validate(overall_stats, all_records)
     print(f"{'='*55}")
@@ -297,7 +270,7 @@ def main():
             print(f"    • {issue}")
     print(f"{'='*55}\n")
 
-    # ── Save outputs ────────────────────────────────────────────
+
     os.makedirs(args.out_dir, exist_ok=True)
     csv_path  = os.path.join(args.out_dir, "stress_test_results.csv")
     hist_path = os.path.join(args.out_dir, "stress_test_histogram.png")

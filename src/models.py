@@ -3,20 +3,17 @@ from typing import Dict, Any
 
 @dataclass
 class State:
-    """
-    Structured JSON object representing the current status of the intersection.
-    """
     north_queue: int
     south_queue: int
     east_queue: int
     west_queue: int
-    current_signal: str  # 'red', 'green_ns', 'green_ew'
+    current_signal: str
     waiting_time_total: float
     emergency_vehicle_present: bool
     time_step: int
     ns_growth: float
     ew_growth: float
-    emergency_direction: str  # 'ns', 'ew', or 'none'
+    emergency_direction: str
     
     def to_dict(self) -> Dict[str, Any]:
         return {
@@ -35,19 +32,10 @@ class State:
 
 @dataclass
 class Action:
-    """
-    Discrete action for the traffic management agent.
-    0 -> All Red (pause)
-    1 -> Green North-South
-    2 -> Green East-West
-    """
     action_type: int
 
 @dataclass
 class StepResult:
-    """
-    Result of an environment step.
-    """
     state: State
     reward: float
     done: bool

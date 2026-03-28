@@ -7,11 +7,10 @@ class TrafficEnv:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.max_time = config.get("max_time", 100)
-        self.arrival_rate_base = config.get("arrival_rate", 2) 
+        self.arrival_rate_base = config.get("arrival_rate", 2)
         self.congestion_multiplier = config.get("congestion_multiplier", 1.0)
         self.emergency_prob = config.get("emergency_prob", 0.0)
-        self.queue_cap = 100 
-        
+        self.queue_cap = 100
         self.reset()
         
     def reset(self, seed: Optional[int] = None) -> State:
@@ -81,7 +80,6 @@ class TrafficEnv:
         elif action.action_type == 2:
             self.current_signal = "green_ew"
             
-        # Stability bonus / signal switching penalty
         if prev_signal != self.current_signal and prev_signal != "red":
             reward -= 1.0 
             
@@ -93,11 +91,9 @@ class TrafficEnv:
         
         if self.emergency_present:
             self.emergency_response_time += 1
-            reward -= 0.5 
-            
+            reward -= 0.5            
         cleared_this_step = 0
-        clearance_capacity = 8 
-        emergency_cleared = False
+        clearance_capacity = 8        emergency_cleared = False
         
         if self.current_signal == "green_ns":
             c_n = min(self.north, clearance_capacity)
@@ -129,19 +125,18 @@ class TrafficEnv:
             self.emergency_direction_str = 'none'
             self.emergencies_handled += 1
             
-        reward -= 0.1 
+        reward -= 0.1        
+
         
-        # ====== CONTROLLED RANDOMNESS MECHANICS ======
-        
-        # Base multiplier logic
+
         current_multiplier = 1.0 + (self.congestion_multiplier * (self.time_step / self.max_time))
         total_expected_rate = (self.arrival_rate_base * 4) * current_multiplier
         
-        # 1. Spawn Rate Noise (+- 15%)
+
         noise_factor = random.uniform(0.85, 1.15)
         noisy_rate = total_expected_rate * noise_factor
         
-        # 2. Dirichlet Distribution for Lane Imbalance (Alpha 5 keeps it vaguely balanced but noisy)
+
         lane_split = np.random.dirichlet([5, 5, 5, 5])
         
         def arrive(r):
@@ -153,12 +148,11 @@ class TrafficEnv:
         self.east = min(self.queue_cap, self.east + arrive(noisy_rate * lane_split[2]))
         self.west = min(self.queue_cap, self.west + arrive(noisy_rate * lane_split[3]))
         
-        # 3. Controlled Emergency probability 
         if not self.emergency_present and random.random() < self.emergency_prob:
             self.emergency_present = True
             self.emergency_direction_str = random.choice(['ns', 'ew'])
             
-        # 4. Small noise in reward (±0.1) prevents absolute identical terminal floats
+
         reward += random.uniform(-0.1, 0.1)
         
         self.time_step += 1

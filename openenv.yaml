@@ -19,7 +19,7 @@ observation_space:
     south_queue: "Int"
     east_queue: "Int"
     west_queue: "Int"
-    current_signal: "String"  # 'red', 'green_ns', 'green_ew'
+    current_signal: "String"
     waiting_time_total: "Float"
     emergency_vehicle_present: "Boolean"
     time_step: "Int"

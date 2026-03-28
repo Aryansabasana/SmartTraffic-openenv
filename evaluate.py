@@ -23,7 +23,6 @@ def run_evaluation(base_seed=None, silent=False):
     total_score = 0.0
     
     for level, task in tasks.items():
-        # Ensure deep procedural variation by modulating the seed per task level
         task_seed = base_seed + list(tasks.keys()).index(level) * 999
         
         state = task.reset(seed=task_seed)
@@ -40,7 +39,7 @@ def run_evaluation(base_seed=None, silent=False):
             total_reward += reward
             steps += 1
             
-            if steps > 500: # Safety
+            if steps > 500:
                 break
                 
         score = task.evaluate()

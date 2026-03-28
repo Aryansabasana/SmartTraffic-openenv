@@ -20,16 +20,16 @@ class BaseTask:
         total_arrived = self.env.total_cleared + max(0,
             self.env.north + self.env.south + self.env.east + self.env.west)
 
-        # If no cars ever arrived (zero-traffic scenario), score as near perfect
+
         if total_arrived == 0 and self.env.total_cleared == 0:
             return 1.0
 
         expected_cleared = self.env.max_time * 2.5 * 2
         clear_score = min(1.0, self.env.total_cleared / max(1, expected_cleared))
 
-        # Weight average wait time more heavily (penalises congestion properly)
+
         avg_wait = self.env.total_waiting_time / max(1, self.env.total_cleared)
-        wait_score = max(0.0, 1.0 - (avg_wait / 10.0))   # tighter: full penalty at 10s avg
+        wait_score = max(0.0, 1.0 - (avg_wait / 10.0))
 
         if self.config.get("emergency_prob", 0) > 0:
             handled = self.env.emergencies_handled

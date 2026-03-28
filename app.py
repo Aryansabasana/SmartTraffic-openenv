@@ -6,11 +6,8 @@ from visualize import generate_graph
 
 def run_simulation(manual_seed=None):
     try:
-        # 1. Determine Seed (prioritize manual, otherwise random)
         seed = int(manual_seed) if manual_seed and str(manual_seed).isdigit() else random.randint(1000, 99999)
         
-        # 2. Run Evaluation logic directly (captured results)
-        # We redirect stdout to capture the logs for the UI
         import io
         from contextlib import redirect_stdout
         
@@ -19,7 +16,6 @@ def run_simulation(manual_seed=None):
             scores = run_evaluation(base_seed=seed, silent=False)
         logs = f.getvalue()
         
-        # 3. Dynamic Graph Generation
         graph_path = "optimization_results.png"
         generate_graph(scores, seed, output_path=graph_path)
         
