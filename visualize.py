@@ -1,3 +1,5 @@
+import matplotlib
+matplotlib.use('Agg')  # Headless backend — required for Docker/server environments
 import matplotlib.pyplot as plt
 import numpy as np
 import os
