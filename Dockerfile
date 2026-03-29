@@ -1,13 +1,10 @@
 FROM python:3.11-slim
 
-# Copy uv from its official image for blazing-fast installs
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
-
 # Copy requirements file first to maximize Docker layer caching
 COPY requirements.txt .
 
-# Use uv to install packages into the system environment BEFORE changing user 
-RUN uv pip install --system --no-cache -r requirements.txt
+# Install packages using pip (reliable on Hugging Face Spaces)
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Set up a new user 'user' with UID 1000 (Required for Hugging Face Spaces)
 RUN useradd -m -u 1000 user
