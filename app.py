@@ -2,70 +2,80 @@ import gradio as gr
 import os
 import random
 
-# MOVED HEAVY IMPORTS INSIDE THE FUNCTION
-# This guarantees app.py parses in milliseconds and the UI framework boots instantly.
+# 1. CORE SIMULATION LOGIC (Stays inside function for lazy loading)
 def run_simulation(manual_seed=None):
+    """
+    Handles simulation and visualization in a single isolated environment.
+    Prevents heavy imports at startup to avoid HF build/runtime jams.
+    """
     try:
-        # 1. Determine Seed
+        # Determine Seed
         seed = int(manual_seed) if manual_seed and str(manual_seed).isdigit() else random.randint(1000, 99999)
         
-        # 2. Localized Imports (Prevents blocking server UI startup!)
-        # This stops matplotlib or other modules from hanging the global thread before launch
+        # Localized Imports (Absolute isolation)
         import io
         from contextlib import redirect_stdout
         from evaluate import run_evaluation
         from visualize import generate_graph
         
-        # 3. Execution
+        # Execution with capture
         f = io.StringIO()
         with redirect_stdout(f):
             scores = run_evaluation(base_seed=seed, silent=False)
         logs = f.getvalue()
         
-        # 4. Visualization
+        # Persistence
         graph_path = "optimization_results.png"
         generate_graph(scores, seed, output_path=graph_path)
         
         return logs, graph_path
     except Exception as e:
-        return f"CRITICAL ERROR during simulation: {str(e)}", None
+        return f"CRITICAL RUNTIME ERROR: {str(e)}", None
 
-# Build the UI Structure
-with gr.Blocks() as interface:
-    gr.Markdown("# 🚦 Smart Traffic Optimization Environment (OpenEnv)")
-    gr.Markdown("Welcome to the Traffic Simulator. Watch how our AI improves traffic flow in real time.")
-    
-    with gr.Row():
-        with gr.Column(scale=1): pass
-        with gr.Column(scale=2, min_width=320):
-            seed_input = gr.Textbox(label="Optional Seed (Empty for Random)", placeholder="e.g. 42")
-            run_btn = gr.Button("🚀 Run Traffic Evaluator", variant="primary", size="lg")
-            gr.HTML("<p style='text-align: center; color: gray; font-size: 0.9em; margin-bottom: 15px;'>Click to simulate AI-driven traffic optimization.</p>")
-        with gr.Column(scale=1): pass
-
-    gr.Markdown("""
-    <div style='background-color: #ffeaea; border-left: 4px solid #ff4d4f; padding: 12px; margin: 15px 0px; border-radius: 4px;'>
-        <span style='color: #a8071a; font-weight: 600;'>🚨 Active Protocol:</span> 
-        <span style='color: #434343;'>System prioritizes emergency vehicles in real-time.</span>
-    </div>
-    """)
+# 2. UI CONSTRUCTOR (Strict encapsulation)
+def create_interface():
+    with gr.Blocks() as interface:
+        gr.Markdown("# 🚦 Smart Traffic Optimization Environment (OpenEnv)")
+        gr.Markdown("Production-grade AI Traffic Simulator built on OpenEnv principles.")
         
-    with gr.Row():
-        with gr.Column(scale=1):
-            gr.Markdown("<h3 style='text-align: center;'>Simulation Logs</h3>")
-            output_text = gr.Textbox(show_label=False, lines=22, interactive=False)
-            
-        with gr.Column(scale=1):
-            gr.Markdown("<h3 style='text-align: center;'>Performance Improvement</h3>")
-            output_img = gr.Image(show_label=False, type="filepath")
+        with gr.Row():
+            with gr.Column(scale=1): pass
+            with gr.Column(scale=2, min_width=320):
+                seed_input = gr.Textbox(label="Fix Randomness (Optional Seed)", placeholder="e.g. 42")
+                run_btn = gr.Button("🚀 Start Evaluation", variant="primary", size="lg")
+                gr.HTML("<p style='text-align: center; color: #666; font-size: 0.85em; margin-top: 10px;'>System handles real-time emergency prioritization automatically.</p>")
+            with gr.Column(scale=1): pass
 
-    # The lack of parentheses prevents execution at startup.
-    run_btn.click(
-        fn=run_simulation, 
-        inputs=[seed_input], 
-        outputs=[output_text, output_img]
-    )
+        with gr.Row():
+            with gr.Column(scale=1):
+                gr.Markdown("<h3 style='text-align: center;'>Processing Logs</h3>")
+                output_text = gr.Textbox(show_label=False, lines=20, interactive=False)
+            with gr.Column(scale=1):
+                gr.Markdown("<h3 style='text-align: center;'>Optimization Delta</h3>")
+                output_img = gr.Image(show_label=False, type="filepath")
 
+        # Event Mapping
+        run_btn.click(
+            fn=run_simulation, 
+            inputs=[seed_input], 
+            outputs=[output_text, output_img]
+        )
+        
+        return interface
+
+# 3. PRODUCTION ENTRY POINT (Differentiates from local import)
 if __name__ == "__main__":
-    # .queue() is mandatory for long-running functions on HF Spaces
-    interface.queue().launch(server_name="0.0.0.0", server_port=7860, theme=gr.themes.Soft())
+    # Ensure no blocking calls reach global scope
+    demo = create_interface()
+    
+    # Configure production binding for Hugging Face Spaces ingress router
+    # server_port is derived from environment variables to avoid 'Address already in use'
+    port = int(os.environ.get("PORT", 7860))
+    
+    # Theme migration to launch for Gradio 6.0 stability
+    demo.queue().launch(
+        server_name="0.0.0.0", 
+        server_port=port, 
+        share=False, 
+        theme="soft"  # Using string-ref for faster theme asset resolution
+    )
