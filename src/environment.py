@@ -86,12 +86,15 @@ class TrafficEnv:
             self.current_signal = "green_ew"
             
         if prev_signal != self.current_signal and prev_signal != "red":
-            reward -= 0.5 
+            reward -= 1.0  # Stable switching penalty
             
         ns_total = self.north + self.south
         ew_total = self.east + self.west
         total_waiting = ns_total + ew_total
-        reward -= (total_waiting * 0.15)
+        
+        # 2. Global Congestion Penalty (Secondary Gradient)
+        # Drastically reduced multiplier so it does not overwhelm clearance in Hard mode
+        reward -= (total_waiting * 0.01) 
         
         self.waiting_time_total += total_waiting
         self.total_waiting_time += total_waiting
@@ -122,33 +125,39 @@ class TrafficEnv:
                 emergency_cleared = True
                 
         self.total_cleared += cleared_this_step
-        reward += cleared_this_step * 0.75
         
+        # 1. Base Clearance Reward (Primary Goal)
+        reward += cleared_this_step * 1.0 
+        
+        # 5. Empty Lane Inefficiency (Prevents wasting green lights)
         if self.current_signal == "green_ns" and ns_total == 0:
-            reward -= 0.5
+            reward -= 1.0
         elif self.current_signal == "green_ew" and ew_total == 0:
-            reward -= 0.5
+            reward -= 1.0
         
         if total_waiting > 0 and cleared_this_step == 0:
             reward -= 0.5
             
         if emergency_cleared:
-            reward += 15.0
+            reward += 20.0 # Massive bonus for fast clearance
             self.emergency_present = False
             self.emergency_direction_str = 'none'
             self.emergencies_handled += 1
             
+        # 3. Starvation Penalty (Targets poor timing, not environmental volume)
         if ns_total > 0 and self.current_signal != "green_ns":
             self.ns_wait_time += 1.0
+            reward -= (self.ns_wait_time * 0.05)
         else:
             self.ns_wait_time = 0.0
             
         if ew_total > 0 and self.current_signal != "green_ew":
             self.ew_wait_time += 1.0
+            reward -= (self.ew_wait_time * 0.05)
         else:
             self.ew_wait_time = 0.0
             
-        reward -= 0.1        
+        reward -= 0.1  # Small step penalty to encourage speed
 
         
 
