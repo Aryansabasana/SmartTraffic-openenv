@@ -2,7 +2,7 @@ import gradio as gr
 import os
 import random
 
-# 1. CORE SIMULATION LOGIC (Stays inside function for lazy loading)
+# 1. CORE SIMULATION LOGIC (Lazy loading)
 def run_simulation(manual_seed=None):
     """
     Handles simulation and visualization in a single isolated environment.
@@ -69,7 +69,6 @@ if __name__ == "__main__":
     demo = create_interface()
     
     # Configure production binding for Hugging Face Spaces ingress router
-    # server_port is derived from environment variables to avoid 'Address already in use'
     port = int(os.environ.get("PORT", 7860))
     
     # Theme migration to launch for Gradio 6.0 stability
@@ -77,5 +76,5 @@ if __name__ == "__main__":
         server_name="0.0.0.0", 
         server_port=port, 
         share=False, 
-        theme="soft"  # Using string-ref for faster theme asset resolution
+        theme="soft" 
     )

@@ -1,15 +1,12 @@
 FROM python:3.11-slim
 
 # 1. OPTIMIZED SYSTEM LAYER: Consolidate apt-get and cleanup
-# Using libglib2.0-0 and libgomp1 for performance/scientific library support
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libglib2.0-0 \
     libgomp1 \
  && rm -rf /var/lib/apt/lists/*
 
 # 2. OPTIMIZED DEPENDENCY LAYER: Fast-track scientific resolution
-# --prefer-binary skips compilation from source for numpy/matplotlib
-# Removed --no-cache-dir to allow HF Space build-caching across deployments
 COPY requirements.txt /tmp/requirements.txt
 RUN pip install --upgrade pip \
  && pip install --prefer-binary -r /tmp/requirements.txt
