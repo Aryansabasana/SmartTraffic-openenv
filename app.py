@@ -31,7 +31,7 @@ def run_simulation(manual_seed=None):
         return f"CRITICAL ERROR during simulation: {str(e)}", None
 
 # Build the UI Structure
-with gr.Blocks(theme=gr.themes.Soft()) as interface:
+with gr.Blocks() as interface:
     gr.Markdown("# 🚦 Smart Traffic Optimization Environment (OpenEnv)")
     gr.Markdown("Welcome to the Traffic Simulator. Watch how our AI improves traffic flow in real time.")
     
@@ -68,4 +68,4 @@ with gr.Blocks(theme=gr.themes.Soft()) as interface:
 
 if __name__ == "__main__":
     # .queue() is mandatory for long-running functions on HF Spaces
-    interface.queue().launch(server_name="0.0.0.0", server_port=7860)
+    interface.queue().launch(server_name="0.0.0.0", server_port=7860, theme=gr.themes.Soft())
