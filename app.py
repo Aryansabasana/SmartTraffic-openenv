@@ -34,7 +34,7 @@ def run_simulation(manual_seed=None):
 
 # 2. UI CONSTRUCTOR (Strict encapsulation)
 def create_interface():
-    with gr.Blocks(theme="soft") as interface:
+    with gr.Blocks() as interface:
         gr.Markdown("# 🚦 Smart Traffic Optimization Environment (OpenEnv)")
         gr.Markdown("Production-grade AI Traffic Simulator built on OpenEnv principles.")
         
@@ -71,9 +71,10 @@ if __name__ == "__main__":
     # Configure production binding for Hugging Face Spaces ingress router
     port = int(os.environ.get("PORT", 7860))
     
-    # Theme migrated to gr.Blocks() for Gradio 6.0 compatibility
+    # Theme belongs in launch() as of Gradio 6.0
     demo.queue().launch(
         server_name="0.0.0.0", 
         server_port=port, 
-        share=False
+        share=False,
+        theme="soft"
     )
