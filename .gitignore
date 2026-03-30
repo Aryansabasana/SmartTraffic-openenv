@@ -1,7 +1,26 @@
+# Python
 __pycache__/
-*.pyc
-stress_test_histogram.png
-stress_test_results.csv
-stress_test_timeseries.png
-optimization_results.png
+*.py[cod]
+*$py.class
+venv/
+.env
+.venv
+env/
+dist/
+build/
+*.egg-info/
+
+# Results & Local Caches
+*.png
+*.csv
+.cache/
 .pytest_cache/
+audit_results/
+stress_test_results.csv
+optimization_results.png
+
+# System/IDE
+.DS_Store
+.vscode/
+.idea/
+.ipynb_checkpoints/
