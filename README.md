@@ -1,12 +1,10 @@
 ---
-title: Smart Traffic Gradio
+title: Smart Traffic Env V2
 emoji: 🚦
 colorFrom: blue
 colorTo: green
-sdk: gradio
-sdk_version: 6.10.0
-app_file: app.py
-pinned: false
+sdk: docker
+app_port: 7860
 ---
 
 # Smart Traffic Optimization Environment
