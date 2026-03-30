@@ -1,10 +1,10 @@
 ---
-title: Smart Traffic Optimization
+title: Smart Traffic Env V2
 emoji: 🚦
-colorFrom: green
-colorTo: red
+colorFrom: blue
+colorTo: green
 sdk: docker
-pinned: false
+app_port: 7860
 ---
 
 # Smart Traffic Optimization Environment (OpenEnv)
