@@ -68,13 +68,8 @@ if __name__ == "__main__":
     # Ensure no blocking calls reach global scope
     demo = create_interface()
     
-    # Configure production binding for Hugging Face Spaces ingress router
-    port = int(os.environ.get("PORT", 7860))
-    
-    # Theme belongs in launch() as of Gradio 6.0
     demo.queue().launch(
         server_name="0.0.0.0",
         server_port=int(os.environ.get("PORT", 7860)),
-        share=False,
         theme=gr.themes.Soft()
     )
