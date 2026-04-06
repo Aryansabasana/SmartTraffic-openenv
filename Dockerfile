@@ -23,4 +23,5 @@ RUN python -c "import gradio; print('gradio', gradio.__version__, 'ready')"
 COPY --chown=user:user . /home/user/app
 
 EXPOSE 7860
+# Use uvicorn directly if needed, but python app.py works with the current setup
 CMD ["python", "app.py"]

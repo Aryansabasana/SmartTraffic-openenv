@@ -85,3 +85,61 @@ class DeterministicAgent:
             
         return target_idx
 
+class LLMAgent:
+    def __init__(self):
+        from openai import OpenAI
+        import os
+        
+        self.client = OpenAI(
+            base_url=os.environ.get("API_BASE_URL"),
+            api_key=os.environ.get("HF_TOKEN")
+        )
+        self.model = os.environ.get("MODEL_NAME")
+
+    def get_action(self, state: State) -> int:
+        state_dict = state.to_dict()
+        prompt = f"""
+        Current Traffic State:
+        - North Queue: {state_dict['north_queue']}
+        - South Queue: {state_dict['south_queue']}
+        - East Queue: {state_dict['east_queue']}
+        - West Queue: {state_dict['west_queue']}
+        - Current Signal: {state_dict['current_signal']}
+        - Emergency Vehicle: {'Yes' if state_dict['emergency_vehicle_present'] else 'No'} (Direction: {state_dict['emergency_direction']})
+        - NS Wait Time: {state_dict['ns_wait_time']}
+        - EW Wait Time: {state_dict['ew_wait_time']}
+        - Total Waiting Time: {state_dict['waiting_time_total']}
+        - Time Step: {state_dict['time_step']}
+
+        Action space:
+        0: All Red (Safety Switch)
+        1: Green North-South
+        2: Green East-West
+
+        Goal: Minimize waiting time and prioritize emergency vehicles.
+        Return ONLY the action number (0, 1, or 2).
+        """
+        
+        try:
+            response = self.client.chat.completions.create(
+                model=self.model,
+                messages=[
+                    {"role": "system", "content": "You are an AI Traffic Signal Controller. You must output only a single integer: 0, 1, or 2."},
+                    {"role": "user", "content": prompt}
+                ],
+                max_tokens=5,
+                temperature=0.0
+            )
+            content = response.choices[0].message.content.strip()
+            # Extract the first digit found in case the LLM adds text
+            import re
+            match = re.search(r'\d', content)
+            if match:
+                action = int(match.group())
+                if action in [0, 1, 2]:
+                    return action
+            return 0 # Fallback
+        except Exception as e:
+            print(f"LLM Error: {e}")
+            return 0 # Fallback safety
+
