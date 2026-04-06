@@ -196,6 +196,7 @@ class TrafficEnv:
             
         info = {
             "total_cleared": self.total_cleared,
+            "cleared_this_step": cleared_this_step,
             "avg_waiting_time": self.total_waiting_time / max(1, self.total_cleared),
             "emergencies_handled": self.emergencies_handled,
             "total_emergencies": self.total_emergencies_generated,

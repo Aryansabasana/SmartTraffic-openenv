@@ -261,14 +261,29 @@ def handle_step(history, n, s, e, w, emg, emg_dir, sig, use_llm):
     })
 
     # Calculations
-    avg_delay = result.info['avg_waiting_time']
-    efficiency = max(0.0, min(1.0, 1.0 - (avg_delay / 40.0)))
-    
     q_ns = new_state['north_queue'] + new_state['south_queue']
     q_ew = new_state['east_queue'] + new_state['west_queue']
-    imbalance = min(100, int((abs(q_ns - q_ew) / max(1, q_ns + q_ew)) * 100))
+    total_q = q_ns + q_ew
+    max_cap = ui_env.env.queue_cap * 4
     
-    congestion = min(100, int(( (q_ns + q_ew) / (ui_env.env.queue_cap * 4) ) * 100))
+    # 1. Queue Pressure (30%) - Higher queue = lower efficiency
+    pressure_factor = 1.0 - (total_q / max_cap)
+    
+    # 2. Wait Factor (30%) - Higher avg delay = lower efficiency
+    avg_delay = result.info['avg_waiting_time']
+    wait_factor = max(0.0, min(1.0, 1.0 - (avg_delay / 30.0)))
+    
+    # 3. Throughput Factor (40%) - Vehicles cleared this step vs capacity
+    cleared_this_step = result.info.get('cleared_this_step', 0)
+    max_clearance = 16.0 
+    throughput_factor = min(1.0, cleared_this_step / max_clearance)
+    
+    # Composite Efficiency (Clamped 0.0 - 1.0)
+    efficiency = (0.3 * pressure_factor) + (0.3 * wait_factor) + (0.4 * throughput_factor)
+    efficiency = max(0.0, min(1.0, efficiency))
+    
+    imbalance = min(100, int((abs(q_ns - q_ew) / max(1, q_ns + q_ew)) * 100))
+    congestion = min(100, int((total_q / max_cap) * 100))
 
     # Smart Rationale
     status = f"🟢 Flowing North-South" if action==1 else (f"🟢 Flowing East-West" if action==2 else "🔴 All Stop")
@@ -321,7 +336,7 @@ def handle_batch(history):
     return batch_history, update_plot(batch_history), round(score, 3), "Full Optimization Episode Completed Successfully. Performance verified.", generate_signal_timeline(batch_history), res.info['total_cleared'], f"{avg_d:.1f}s", "EPISODE COMPLETE", "VARIES", generate_imbalance_meter(50)
 
 def handle_reset():
-    return [], 10, 10, 5, 5, False, "ns", "red", generate_intersection_html({'north_queue': 0, 'south_queue': 0, 'east_queue': 0, 'west_queue': 0, 'current_signal': 'red', 'emergency_vehicle_present': False}), update_plot([]), 0.0, "Ready.", generate_signal_timeline([]), 0, "0.0s", "IDLE", "0%", generate_imbalance_meter(0)
+    return [], 10, 10, 5, 5, False, "ns", "red", generate_intersection_html({'north_queue': 0, 'south_queue': 0, 'east_queue': 0, 'west_queue': 0, 'current_signal': 'red', 'emergency_vehicle_present': False}), update_plot([]), 1.0, "Ready.", generate_signal_timeline([]), 0, "0.0s", "IDLE", "0%", generate_imbalance_meter(0)
 
 # --- UI BUILDER ---
 def create_ui():
