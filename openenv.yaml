@@ -23,6 +23,11 @@ observation_space:
     waiting_time_total: "Float"
     emergency_vehicle_present: "Boolean"
     time_step: "Int"
+    ns_growth: "Float"
+    ew_growth: "Float"
+    emergency_direction: "String"
+    ns_wait_time: "Float"
+    ew_wait_time: "Float"
     
 reward_type:
   type: "Dense"
