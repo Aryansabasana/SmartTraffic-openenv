@@ -85,6 +85,23 @@ class DeterministicAgent:
             
         return target_idx
 
+    def get_action_with_explanation(self, state: State) -> tuple[int, str]:
+        action = self.get_action(state)
+        reasons = []
+        ns_total = state.north_queue + state.south_queue
+        ew_total = state.east_queue + state.west_queue
+        if state.emergency_vehicle_present:
+            reasons.append(f"EMERGENCY DETECTED in {state.emergency_direction.upper()} direction.")
+        if action == 1:
+            reasons.append(f"Priority given to North-South (Queue: {ns_total} vehicles).")
+        elif action == 2:
+            reasons.append(f"Priority given to East-West (Queue: {ew_total} vehicles).")
+        else:
+            reasons.append("Signals set to RED for safety switching.")
+        if state.ns_wait_time > 10 or state.ew_wait_time > 10:
+            reasons.append("Mitigating lane starvation due to high wait time.")
+        return action, " ".join(reasons)
+
 class LLMAgent:
     def __init__(self):
         from openai import OpenAI
@@ -143,3 +160,10 @@ class LLMAgent:
             print(f"LLM Error: {e}")
             return 0 # Fallback safety
 
+    def get_action_with_explanation(self, state: State) -> tuple[int, str]:
+        # Simple placeholder for LLM explanation - in production, you'd ask the LLM for the reason too.
+        action = self.get_action(state)
+        explanation = f"AI Model {self.model} selected action {action} based on deep neural optimization."
+        if state.emergency_vehicle_present:
+            explanation += " Emergency prioritization was weighted into the decision."
+        return action, explanation
