@@ -16,9 +16,13 @@ dependencies = [
     "pyyaml==6.0.2",
     "fastapi>=0.115.2",
     "uvicorn==0.30.6",
-    "openai==1.47.0",
-    "pydantic==2.9.2"
+    "openai>=2.8.2",
+    "pydantic==2.9.2",
+    "openenv-core>=0.2.0"
 ]
+
+[project.scripts]
+server = "app:main"
 
 [project.optional-dependencies]
 dev = [
