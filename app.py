@@ -95,7 +95,7 @@ def run_ui_simulation(manual_seed=None):
         return f"CRITICAL RUNTIME ERROR: {str(e)}", None
 
 def create_interface():
-    with gr.Blocks(theme=gr.themes.Soft()) as interface:
+    with gr.Blocks() as interface:
         gr.Markdown("# 🚦 Smart Traffic Optimization Dashboard")
         
         with gr.Row():
@@ -115,7 +115,7 @@ def create_interface():
 
 # Mount Gradio Dashboard
 dashboard = create_interface()
-app = gr.mount_gradio_app(app, dashboard, path="/dashboard")
+app = gr.mount_gradio_app(app, dashboard, path="/dashboard", app_kwargs={"theme": gr.themes.Soft()})
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 7860))
