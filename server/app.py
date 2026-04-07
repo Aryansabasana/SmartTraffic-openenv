@@ -363,7 +363,7 @@ def handle_batch(history):
     return batch_history, update_plot(batch_history), to_open_unit_interval(score), "Full Optimization Episode Completed Successfully. Performance verified.", generate_signal_timeline(batch_history), res.info['total_cleared'], f"{avg_d:.1f}s", "EPISODE COMPLETE", "VARIES", generate_imbalance_meter(50)
 
 def handle_reset():
-    return [], 10, 10, 5, 5, False, "ns", "red", generate_intersection_html({'north_queue': 0, 'south_queue': 0, 'east_queue': 0, 'west_queue': 0, 'current_signal': 'red', 'emergency_vehicle_present': False}), update_plot([]), 1.0, "Ready.", generate_signal_timeline([]), 0, "0.0s", "IDLE", "0%", generate_imbalance_meter(0)
+    return [], 10, 10, 5, 5, False, "ns", "red", generate_intersection_html({'north_queue': 0, 'south_queue': 0, 'east_queue': 0, 'west_queue': 0, 'current_signal': 'red', 'emergency_vehicle_present': False}), update_plot([]), to_open_unit_interval(1.0), "Ready.", generate_signal_timeline([]), 0, "0.0s", "IDLE", "0%", generate_imbalance_meter(0)
 
 # --- UI BUILDER ---
 def create_ui():

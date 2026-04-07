@@ -9,12 +9,21 @@ def to_open_unit_interval(x: float) -> float:
     Strictly maps any float x to the open unit interval (0, 1).
     Handles NaN, Inf, and ensures scores are never 0 or 1.
     """
-    if x != x:  # NaN check
-        return 1 / 2
-    if x == float("inf"):
-        return 1.0 - EPS
-    if x == float("-inf"):
+    import math
+
+    # Handle invalid numbers
+    if x is None or math.isnan(x):
+        return 0.5
+    if math.isinf(x):
+        return 1.0 - EPS if x > 0 else EPS
+
+    # Clamp strictly inside (0,1)
+    if x <= 0.0:
         return EPS
+    if x >= 1.0:
+        return 1.0 - EPS
+
+    # Final safety clamp
     return max(EPS, min(1.0 - EPS, float(x)))
 
 class BaseTask:

@@ -8,21 +8,6 @@ def emit(marker):
     """Guaranteed flush-print for evaluator signaling."""
     print(marker, flush=True)
 
-def to_safe_open_interval(x: float) -> float:
-    """Extreme defensive helper to force scores into (0, 1) and avoid boundary values."""
-    EPS = 0.01
-    if x != x:
-        x = 0.5
-    elif x == float("inf"):
-        x = 1.0 - EPS
-    elif x == float("-inf"):
-        x = EPS
-    x = float(x)
-    if x <= EPS:
-        return EPS
-    if x >= 1.0 - EPS:
-        return 1.0 - EPS
-    return x
 
 def main():
     # Immediate signal to the evaluator parser that the script is active
@@ -98,7 +83,7 @@ def main():
                 final_score = 0.5
                 
             # Extreme defensive mapping to open interval [0.01, 0.99] at the final print site
-            safe_final = to_safe_open_interval(final_score)
+            safe_final = to_open_unit_interval(final_score)
             
             # 5. Signal Task End (lowercased 'success' boolean, precision .6f)
             success_str = "true" if success else "false"
