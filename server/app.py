@@ -69,6 +69,16 @@ async def api_step(action: int = Body(..., embed=True)):
 async def api_get_state():
     return active_task.state().to_dict()
 
+@app.get("/")
+async def root():
+    return {
+        "status": "active",
+        "service": "Smart Traffic OpenEnv API",
+        "ui_enabled": HAS_GRADIO,
+        "message": "API endpoints are active at /api/reset and /api/step."
+    }
+
+
 # --- UI VISUALIZATION HELPERS ---
 
 def generate_intersection_html(state_dict):
