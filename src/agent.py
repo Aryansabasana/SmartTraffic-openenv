@@ -108,10 +108,10 @@ class LLMAgent:
         import os
         
         self.client = OpenAI(
-            base_url=os.environ.get("API_BASE_URL"),
+            base_url=os.environ.get("API_BASE_URL", "https://api-inference.huggingface.co/v1/"),
             api_key=os.environ.get("HF_TOKEN")
         )
-        self.model = os.environ.get("MODEL_NAME")
+        self.model = os.environ.get("MODEL_NAME", "meta-llama/Llama-3.1-8B-Instruct")
 
     def get_action(self, state: State) -> int:
         state_dict = state.to_dict()

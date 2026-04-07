@@ -21,7 +21,7 @@ class BaseTask:
             self.env.north + self.env.south + self.env.east + self.env.west)
 
         if total_arrived == 0 and self.env.total_cleared == 0:
-            return 1.0
+            return 0.999
 
         # Accurately map max clearance logic to prevent low-traffic penalties & high-traffic inflation.
         expected_arrived = self.env.max_time * self.config.get("arrival_rate", 2.0) * 4 * self.config.get("congestion_multiplier", 1.0)
@@ -44,7 +44,7 @@ class BaseTask:
             # Rescaled symmetrically if no emergency component applies
             total = (0.625 * clear_score) + (0.375 * wait_score)
 
-        return min(1.0, max(0.0, total))
+        return max(0.001, min(0.999, total))
 
 class EasyTask(BaseTask):
     def __init__(self):
