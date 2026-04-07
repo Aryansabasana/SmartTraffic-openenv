@@ -107,11 +107,20 @@ class LLMAgent:
         from openai import OpenAI
         import os
         
+        # Priority: API_KEY (Evaluator) > OPENAI_API_KEY (Local/Dev) > HF_TOKEN (Historical)
+        base_url = os.environ.get("API_BASE_URL", "https://api-inference.huggingface.co/v1/")
+        api_key = os.environ.get("API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("HF_TOKEN")
+        
+        if not api_key:
+             # This will trigger a failure if we're in mandatory proxy mode
+             print("WARNING: No LLM API Key detected in environment symbols.", file=sys.stderr)
+
         self.client = OpenAI(
-            base_url=os.environ.get("API_BASE_URL", "https://api-inference.huggingface.co/v1/"),
-            api_key=os.environ.get("HF_TOKEN")
+            base_url=base_url,
+            api_key=api_key
         )
         self.model = os.environ.get("MODEL_NAME", "meta-llama/Llama-3.1-8B-Instruct")
+
 
     def get_action(self, state: State) -> int:
         state_dict = state.to_dict()

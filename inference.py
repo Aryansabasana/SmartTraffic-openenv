@@ -12,14 +12,30 @@ def main():
     # Immediate signal to the evaluator parser that the script is active
     emit("[START] task=bootstrap")
     
-    # Initialize Agent with safe fallback to HEURISTIC if LLM/CREDENTIALS fail
+    # Detect if we are in "Evaluator Mode" (Proxy required)
+    api_url = os.environ.get("API_BASE_URL")
+    api_key = os.environ.get("API_KEY") or os.environ.get("OPENAI_API_KEY")
+    
+    is_evaluator_mode = bool(api_url and api_key)
+    
+    # Initialize Agent
     try:
-        agent = LLMAgent()
+        if is_evaluator_mode:
+            # ENFORCE LLM: If initialization fails here, we WANT it to crash to signal proxy issues
+            agent = LLMAgent()
+            print(f"INFO: Evaluator Mode Active (Proxy: {api_url})", file=sys.stderr)
+        else:
+            # LOCAL MODE: Fallback to Heuristic to ensure markers are still printed
+            try:
+                agent = LLMAgent()
+                print("INFO: Local Mode Active (LLM Initialized)", file=sys.stderr)
+            except Exception:
+                agent = DeterministicAgent()
+                print("INFO: Local Mode Active (Heuristic Fallback)", file=sys.stderr)
     except Exception as e:
-        # Fallback to Heuristic to ensure markers are still printed
-        agent = DeterministicAgent()
-        # Non-marker info to stderr (ignored by evaluator parser)
-        print(f"INFO: Using Heuristic Fallback (LLM Init failed: {e})", file=sys.stderr)
+        print(f"CRITICAL: Failed to initialize Agent in Evaluator Mode. Error: {e}", file=sys.stderr)
+        sys.exit(1)
+
 
     tasks_to_run = [
         ("Easy", EasyTask()),
