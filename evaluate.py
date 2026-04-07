@@ -55,9 +55,8 @@ def run_evaluation(base_seed=None, silent=False):
             print(f"       Final Level Score (0-1): {safe_score}")
     
     avg_score = total_score / len(tasks)
-    # Final safety clip for Overall score using centralized helper
-    # Double wrap to ensure no floating point boundary issues
-    avg_score = to_open_unit_interval(to_open_unit_interval(avg_score))
+    # Use centralized helper with new EPS=0.01 for overall score
+    avg_score = to_open_unit_interval(avg_score)
     results["Overall"] = avg_score
     
     if not silent:
