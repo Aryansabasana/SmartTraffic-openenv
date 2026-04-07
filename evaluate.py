@@ -48,9 +48,11 @@ def run_evaluation(base_seed=None, silent=False):
         info = result.info
         
         if not silent:
+            # Safely clamp and print raw representation to avoid .3f rounding to 1.000
+            safe_score = str(to_open_unit_interval(score))
             print(f"[{level}] Steps: {steps} | Total Reward: {total_reward:.2f}")
             print(f"       Cleared: {info['total_cleared']} | Avg Wait/Car: {info['avg_waiting_time']:.1f} | Emg Handled: {info['emergencies_handled']}")
-            print(f"       Final Level Score (0-1): {score:.3f}")
+            print(f"       Final Level Score (0-1): {safe_score}")
     
     avg_score = total_score / len(tasks)
     # Final safety clip for Overall score using centralized helper
@@ -58,8 +60,9 @@ def run_evaluation(base_seed=None, silent=False):
     results["Overall"] = avg_score
     
     if not silent:
+        safe_avg = str(avg_score)
         print(f"==================================================")
-        print(f"Overall Average Score: {avg_score:.4f} / 1.000")
+        print(f"Overall Average Score: {safe_avg} / 1.000")
         print(f"==================================================\n")
     
     return results

@@ -71,6 +71,9 @@ def main():
                 emit(f"[STEP] step={step_count} reward={reward:.2f} done={done_str}")
                 
             success = True
+        except Exception as e:
+            print(f"CRITICAL: Task {task_name} failed explicitly with error: {e}", file=sys.stderr)
+            success = False
         finally:
             # 4. Final Evaluation (even on crash)
             try:
@@ -81,13 +84,8 @@ def main():
             # Safely map to open interval using imported centralized mathematical helper
             safe_score = to_open_unit_interval(final_score)
             
-            # String formatting can round 0.999999 out of the open interval
-            # We strictly enforce the textual output prevents EXACTLY 0.0 or 1.0
-            formatted_score = f"{safe_score:.6f}"
-            if float(formatted_score) >= 1.0:
-                formatted_score = "0.999999"
-            elif float(formatted_score) <= 0.0:
-                formatted_score = "0.000001"
+            # Use raw string conversion to avoid any f-string rounding that could produce "1.0" or "0.0"
+            formatted_score = str(safe_score)
             
             # 5. Signal Task End (lowercased 'success' boolean)
             success_str = "true" if success else "false"
