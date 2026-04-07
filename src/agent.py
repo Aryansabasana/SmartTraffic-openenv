@@ -112,8 +112,8 @@ class LLMAgent:
         api_key = os.environ.get("API_KEY") or os.environ.get("OPENAI_API_KEY") or os.environ.get("HF_TOKEN")
         
         if not api_key:
-             # This will trigger a failure if we're in mandatory proxy mode
-             print("WARNING: No LLM API Key detected in environment symbols.", file=sys.stderr)
+             raise ValueError("API_KEY or HF_TOKEN is missing. This is required by the evaluator checklist.")
+
 
         # Explicitly initialize with only supported arguments to avoid 'proxies=' error in some environments
         self.client = OpenAI(

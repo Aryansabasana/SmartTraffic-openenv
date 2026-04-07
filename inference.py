@@ -47,34 +47,44 @@ def main():
         # 1. Signal Task Start
         emit(f"[START] task={task_name}")
         
-        # 2. Rollout
         state = task.reset()
         done = False
         step_count = 0
         max_steps = 100 # Standard evaluator budget
+        success = False
         
-        while not done and step_count < max_steps:
-            # Action selection
-            action = agent.get_action(state)
+        try:
+            while not done and step_count < max_steps:
+                # Action selection
+                action = agent.get_action(state)
+                
+                # Step the simulation
+                result = task.step(action)
+                
+                state = result.state
+                reward = result.reward
+                done = result.done
+                step_count += 1
+                
+                # 3. Signal Step Result (2 decimal places, lowercased 'done' boolean)
+                done_str = "true" if done else "false"
+                emit(f"[STEP] step={step_count} reward={reward:.2f} done={done_str}")
+                
+            success = True
+        finally:
+            # 4. Final Evaluation (even on crash)
+            try:
+                final_score = task.evaluate()
+            except Exception:
+                final_score = 0.0001
+                
+            # Clamping score to (0.0001, 0.9999) to satisfy range constraints
+            safe_score = max(0.0001, min(0.9999, final_score))
             
-            # Step the simulation
-            result = task.step(action)
-            
-            state = result.state
-            reward = result.reward
-            done = result.done
-            step_count += 1
-            
-            # 3. Signal Step Result
-            emit(f"[STEP] step={step_count} reward={reward:.4f}")
-            
-        # 4. Final Evaluation
-        final_score = task.evaluate()
-        
-        # 5. Signal Task End
-        # Clamping score to (0.0001, 0.9999) to satisfy range constraints
-        safe_score = max(0.0001, min(0.9999, final_score))
-        emit(f"[END] task={task_name} score={safe_score:.4f} steps={step_count}")
+            # 5. Signal Task End (lowercased 'success' boolean)
+            success_str = "true" if success else "false"
+            emit(f"[END] task={task_name} score={safe_score:.2f} steps={step_count} success={success_str}")
+
 
     # Explicit exit for clean terminator signal
     sys.exit(0)
