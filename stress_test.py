@@ -15,7 +15,7 @@ import numpy as np
 from tqdm import tqdm
 
 sys.path.insert(0, os.path.dirname(__file__))
-from src.tasks import EasyTask, MediumTask, HardTask
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
 from src.agent import DeterministicAgent
 
 
@@ -64,7 +64,7 @@ def run_single(seed: int) -> dict:
         results[f"{level}_cleared"] = info["total_cleared"]
         results[f"{level}_wait"]    = round(info["avg_waiting_time"], 2)
 
-    results["overall_score"] = total_score / len(TASK_MAP)
+    results["overall_score"] = to_open_unit_interval(total_score / len(TASK_MAP))
     return results
 
 

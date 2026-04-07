@@ -287,7 +287,7 @@ else:
 
 
 
-sep("TEST 7: GRAPH VALIDATION (Score ↔ Graph Consistency)")
+sep("TEST 7: GRAPH VALIDATION (Score <-> Graph Consistency)")
 from visualize import generate_graph
 
 _, sc_a, _ = run_single(seed=111)
@@ -336,9 +336,9 @@ any_marginal = any(v == "MARGINAL" for v in results.values())
 
 print(f"\n{'='*55}")
 if any_fail:
-    print("  FINAL VERDICT: NEEDS FIXES ❌")
+    print("  FINAL VERDICT: NEEDS FIXES [X]")
 elif any_marginal:
-    print("  FINAL VERDICT: MOSTLY TRUSTED ⚠️  (minor issues detected)")
+    print("  FINAL VERDICT: MOSTLY TRUSTED [!] (minor issues detected)")
 else:
-    print("  FINAL VERDICT: TRUSTED SYSTEM ✅")
+    print("  FINAL VERDICT: TRUSTED SYSTEM [OK]")
 print(f"{'='*55}\n")

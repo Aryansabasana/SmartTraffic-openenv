@@ -1,6 +1,6 @@
 import random
 import argparse
-from src.tasks import EasyTask, MediumTask, HardTask
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
 from src.agent import DeterministicAgent
 
 def run_evaluation(base_seed=None, silent=False):
@@ -53,8 +53,8 @@ def run_evaluation(base_seed=None, silent=False):
             print(f"       Final Level Score (0-1): {score:.3f}")
     
     avg_score = total_score / len(tasks)
-    # Final safety clip for Overall score
-    avg_score = max(0.01, min(0.99, avg_score))
+    # Final safety clip for Overall score using centralized helper
+    avg_score = to_open_unit_interval(avg_score)
     results["Overall"] = avg_score
     
     if not silent:

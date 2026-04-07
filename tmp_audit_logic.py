@@ -112,11 +112,11 @@ def test_efficiency_logic():
         bad_task.step(0) # All Red
     
     final_score = bad_task.evaluate()
-    print(f"  Extreme Congestion Score: {final_score:.3f}")
-    if 0.005 < final_score < 0.995:
-        print("  OK Logic Check: Scores are strictly bounded (0.005, 0.995).")
+    print(f"  Extreme Congestion Score: {final_score:.6f}")
+    if 0.0 < final_score < 1.0:
+        print("  OK Logic Check: Scores are strictly bounded (0.0, 1.0).")
     else:
-        print(f"  ERR Logic Error: Score {final_score} is not strictly within the safe 0.01-0.99 zone.")
+        print(f"  ERR Logic Error: Score {final_score} is outside strict open interval (0, 1).")
 
 if __name__ == "__main__":
     test_efficiency_logic()
