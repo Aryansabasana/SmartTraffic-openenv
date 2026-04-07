@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM public.ecr.aws/docker/library/python:3.10-slim
 
 # Set environment variables for build and runtime stability
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -16,9 +16,8 @@ RUN pip install -r requirements.txt
 # Copy only necessary project files
 COPY . .
 
-# Expose the standard port
 EXPOSE 7860
 
-# Simplest possible entry point
 CMD ["python", "server/app.py"]
+
 

@@ -1,2 +1,0 @@
-# Optional LLM integration (Not required for Space Demo or core evaluation)
-openai==1.51.2
