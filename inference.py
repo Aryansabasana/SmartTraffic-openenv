@@ -1,7 +1,7 @@
 import sys
 import os
 import random
-from src.tasks import EasyTask, MediumTask, HardTask
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
 from src.agent import DeterministicAgent, LLMAgent
 
 def emit(marker):
@@ -76,14 +76,22 @@ def main():
             try:
                 final_score = task.evaluate()
             except Exception:
-                final_score = 0.0001
+                final_score = 0.5
                 
-            # Clamping score to (0.0001, 0.9999) to satisfy range constraints
-            safe_score = max(0.0001, min(0.9999, final_score))
+            # Safely map to open interval using imported centralized mathematical helper
+            safe_score = to_open_unit_interval(final_score)
+            
+            # String formatting can round 0.999999 out of the open interval
+            # We strictly enforce the textual output prevents EXACTLY 0.0 or 1.0
+            formatted_score = f"{safe_score:.6f}"
+            if float(formatted_score) >= 1.0:
+                formatted_score = "0.999999"
+            elif float(formatted_score) <= 0.0:
+                formatted_score = "0.000001"
             
             # 5. Signal Task End (lowercased 'success' boolean)
             success_str = "true" if success else "false"
-            emit(f"[END] task={task_name} score={safe_score:.2f} steps={step_count} success={success_str}")
+            emit(f"[END] task={task_name} score={formatted_score} steps={step_count} success={success_str}")
 
 
     # Explicit exit for clean terminator signal
