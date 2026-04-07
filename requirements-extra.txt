@@ -1,0 +1,5 @@
+# Demo & Interactive Dashboard dependencies (Optional for core evaluation)
+gradio==6.10.0
+matplotlib==3.8.4
+pandas==2.2.2
+openai==1.51.2

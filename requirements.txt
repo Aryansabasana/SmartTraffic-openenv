@@ -1,8 +1,5 @@
-gradio==6.10.0
-matplotlib==3.8.4
 numpy==1.26.4
-pandas==2.2.2
 fastapi==0.115.2
 uvicorn==0.30.6
-openai==1.51.2
 pydantic==2.9.2
+

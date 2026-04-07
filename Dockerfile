@@ -1,19 +1,24 @@
 FROM python:3.10-slim
 
-# Build stability optimizations
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV PYTHONPATH=/app
+# Set environment variables for build and runtime stability
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PYTHONPATH=/app \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
 
 WORKDIR /app
 
-# Install isolated dependencies first to maximize Docker caching
-COPY requirements.txt /app/
-RUN pip install --no-cache-dir -r requirements.txt
+# Standard evaluator-safe dependency installation
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
-# Copy source code after dependencies to prevent cache invalidation on code change
-COPY . /app/
+# Copy only necessary project files
+COPY . .
 
+# Expose the standard port
 EXPOSE 7860
 
+# Simplest possible entry point
 CMD ["python", "server/app.py"]
+

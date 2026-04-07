@@ -4,12 +4,24 @@ import time
 from typing import Dict, Any, Optional, List
 from fastapi import FastAPI, HTTPException, Body, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-import gradio as gr
 import uvicorn
-import pandas as pd
-import matplotlib.pyplot as plt
 import io
+
+try:
+    import gradio as gr
+    HAS_GRADIO = True
+except ImportError:
+    HAS_GRADIO = False
+
+try:
+    import pandas as pd
+    import matplotlib.pyplot as plt
+    HAS_PLOTTING = True
+except ImportError:
+    HAS_PLOTTING = False
+    pd = None
+    plt = None
+
 
 from src.tasks import EasyTask
 from src.models import State, StepResult
@@ -191,6 +203,11 @@ def generate_signal_timeline(history):
 
 def update_plot(history):
     """Professional stylized Matplotlib plot."""
+    if not HAS_PLOTTING:
+        # Return a blank figure or similar placeholder if possible, 
+        # but in a headless environment this should just be bypassed.
+        return None
+
     plt.close('all')
     fig, ax = plt.subplots(figsize=(10, 3.5), tight_layout=True)
     fig.patch.set_facecolor('#0f0f0f')
@@ -220,6 +237,7 @@ def update_plot(history):
     ax.legend(facecolor='#1a1a1a', edgecolor='#333', labelcolor='#ccc', fontsize=8, loc='upper right')
     plt.close(fig)
     return fig
+
 
 # --- AGENT LOGIC ---
 heuristic_agent = DeterministicAgent()
@@ -436,8 +454,12 @@ def create_ui():
 
     return interface
 
-dashboard = create_ui()
-app = gr.mount_gradio_app(app, dashboard, path="/")
+if HAS_GRADIO:
+    dashboard = create_ui()
+    app = gr.mount_gradio_app(app, dashboard, path="/")
+else:
+    print("Warning: Gradio not found. Dashboard UI is disabled. API endpoints are still active.")
+
 
 def main():
     port = int(os.environ.get("PORT", 7860))

@@ -1,8 +1,48 @@
+# Version control
 .git
-__pycache__
+.gitignore
+.gitattributes
+
+# Python environment
+__pycache__/
 *.pyc
+*.pyo
+*.pyd
+.venv/
 .env
-.ipynb_checkpoints
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Docker/Cloud Build
 Dockerfile
 .dockerignore
-tests/
+
+# Documentation & Notebooks
+*.md
+!README.md
+docs/
+*.ipynb
+.ipynb_checkpoints/
+
+# Local Dev/Artifacts
+assets/
+logs/
+screenshots/
+results/
+artifacts/
+tmp*/
+uv.lock
+pyproject.toml
+
+# Extra scripts
+audit.py
+stress_test.py
+tmp_audit_logic.py
+verify_scores.py
+test_dashboard.py
+visualize.py
+inference.py
+dashboard.py
+
