@@ -53,11 +53,13 @@ def run_evaluation(base_seed=None, silent=False):
             print(f"       Final Level Score (0-1): {score:.3f}")
     
     avg_score = total_score / len(tasks)
+    # Final safety clip for Overall score
+    avg_score = max(0.01, min(0.99, avg_score))
     results["Overall"] = avg_score
     
     if not silent:
         print(f"==================================================")
-        print(f"Overall Average Score: {avg_score:.3f} / 1.000")
+        print(f"Overall Average Score: {avg_score:.4f} / 1.000")
         print(f"==================================================\n")
     
     return results

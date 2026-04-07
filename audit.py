@@ -72,10 +72,10 @@ print(f"\nRun 2: Easy={sc2['Easy']:.4f} | Medium={sc2['Medium']:.4f} | Hard={sc2
 print(f"       Cleared: {m2['Easy']['cleared']} / {m2['Medium']['cleared']} / {m2['Hard']['cleared']}")
 
 if sc1 == sc2 and m1 == m2:
-    print("\n✅ TEST 1: SEED REPRODUCIBILITY → PASS")
+    print("\n[PASS] TEST 1: SEED REPRODUCIBILITY")
     results["Seed Reproducibility"] = "PASS"
 else:
-    print("\n❌ TEST 1: SEED REPRODUCIBILITY → FAIL (outputs differ with same seed)")
+    print("\n[FAIL] TEST 1: SEED REPRODUCIBILITY (outputs differ with same seed)")
     results["Seed Reproducibility"] = "FAIL"
 
 
@@ -93,10 +93,10 @@ unique_seeds = len(set(r[0] for r in runs)) == 3
 any_diff = len(set(s for s in [str(x) for x in all_scores])) > 1
 
 if unique_seeds and any_diff:
-    print("\n✅ TEST 2: STOCHASTIC VARIABILITY → PASS (unique seeds + varying outputs)")
+    print("\n[PASS] TEST 2: STOCHASTIC VARIABILITY (unique seeds + varying outputs)")
     results["Stochastic Variability"] = "PASS"
 else:
-    print("\n❌ TEST 2: STOCHASTIC VARIABILITY → FAIL (same outputs == possible hardcoding)")
+    print("\n[FAIL] TEST 2: STOCHASTIC VARIABILITY (same outputs == possible hardcoding)")
     results["Stochastic Variability"] = "FAIL"
 
 
@@ -121,16 +121,16 @@ for fp in files:
         if re.search(pat, audit_content):
             warnings.append(pat)
     if warnings:
-        print(f"  ⚠️  WARNING: {fp}  ← suspicious pattern found")
+        print(f"  [WARNING]: {fp}  - suspicious pattern found")
         all_ok = False
     else:
-        print(f"  ✅ OK: {fp}")
+        print(f"  [OK]: {fp}")
 
 if all_ok:
-    print("\n✅ TEST 3: NO HARDCODED VALUES → PASS")
+    print("\n[PASS] TEST 3: NO HARDCODED VALUES")
     results["No Hardcoding"] = "PASS"
 else:
-    print("\n❌ TEST 3: NO HARDCODED VALUES → FAIL")
+    print("\n[FAIL] TEST 3: NO HARDCODED VALUES")
     results["No Hardcoding"] = "FAIL"
 
 
@@ -170,10 +170,10 @@ print(f"  High Traffic: Score={high_score:.4f} | Cleared={high_cleared} | Avg Wa
 print(f"\n  Score Delta: {low_score - high_score:+.4f} | Wait Delta: {high_wait - low_wait:+.2f}")
 
 if low_wait <= high_wait and low_score >= high_score:
-    print("\n✅ TEST 4: METRIC CONSISTENCY → PASS (low traffic scores better than high traffic)")
+    print("\n[PASS] TEST 4: METRIC CONSISTENCY (low traffic scores better than high traffic)")
     results["Metric Logic"] = "PASS"
 else:
-    print("\n❌ TEST 4: METRIC CONSISTENCY → FAIL (higher traffic should not beat lower)")
+    print("\n[FAIL] TEST 4: METRIC CONSISTENCY (higher traffic should not beat lower)")
     results["Metric Logic"] = "FAIL"
 
 
@@ -216,13 +216,13 @@ print(f"  Random Agent Score: {random_overall:.4f}")
 print(f"  Improvement Delta:  {delta:+.4f} ({delta*100:.1f}%)")
 
 if delta > 0.02:
-    print("\n✅ TEST 5: AGENT IMPACT → PASS (Real agent significantly outperforms random)")
+    print("\n[PASS] TEST 5: AGENT IMPACT (Real agent significantly outperforms random)")
     results["Agent Impact"] = "PASS"
 elif delta >= 0:
-    print("\n⚠️  TEST 5: AGENT IMPACT → MARGINAL (small gap, agent barely helps)")
+    print("\n[MARGINAL] TEST 5: AGENT IMPACT (small gap, agent barely helps)")
     results["Agent Impact"] = "MARGINAL"
 else:
-    print("\n❌ TEST 5: AGENT IMPACT → FAIL (random policy beats real agent — logic error)")
+    print("\n[FAIL] TEST 5: AGENT IMPACT (random policy beats real agent — logic error)")
     results["Agent Impact"] = "FAIL"
 
 
@@ -266,7 +266,7 @@ while not done:
 emg_score = emg_task.evaluate()
 emg_handled = r.info["emergencies_handled"]
 
-print(f"\n  Case A (Zero traffic):     Score = {zero_score:.4f} (expected ≈ 1.0)")
+print(f"\n  Case A (Zero traffic):     Score = {zero_score:.4f} (expected approx 1.0)")
 print(f"  Case B (Extreme traffic):  Score = {cong_score:.4f} (expected < zero_score)")
 print(f"  Case C (Emergency task):   Score = {emg_score:.4f} | Emergencies Handled = {emg_handled}")
 
@@ -275,14 +275,14 @@ case_b = cong_score < zero_score
 case_c = emg_handled > 0
 
 if case_a and case_b and case_c:
-    print("\n✅ TEST 6: EXTREME SCENARIOS → PASS")
+    print("\n[PASS] TEST 6: EXTREME SCENARIOS")
     results["Extreme Cases"] = "PASS"
 else:
     issues = []
     if not case_a: issues.append(f"Zero-traffic score {zero_score:.3f} unexpectedly low")
-    if not case_b: issues.append(f"Congested score {cong_score:.3f} ≥ zero-traffic score {zero_score:.3f}")
+    if not case_b: issues.append(f"Congested score {cong_score:.3f} \u2265 zero-traffic score {zero_score:.3f}")
     if not case_c: issues.append("No emergencies handled in hard task")
-    print(f"\n❌ TEST 6: EXTREME SCENARIOS → FAIL: {'; '.join(issues)}")
+    print(f"\n[FAIL] TEST 6: EXTREME SCENARIOS: {'; '.join(issues)}")
     results["Extreme Cases"] = "FAIL"
 
 
@@ -318,18 +318,18 @@ for f in [out_a, out_b]:
     if os.path.exists(f): os.remove(f)
 
 if graph_files_exist and values_match:
-    print("\n✅ TEST 7: GRAPH VALIDATION → PASS (graphs generated from live scores, vary with seed)")
+    print("\n[PASS] TEST 7: GRAPH VALIDATION (graphs generated from live scores, vary with seed)")
     results["Graph Accuracy"] = "PASS"
 else:
-    print("\n❌ TEST 7: GRAPH VALIDATION → FAIL")
+    print("\n[FAIL] TEST 7: GRAPH VALIDATION")
     results["Graph Accuracy"] = "FAIL"
 
 
 
 sep("FINAL AUDIT SUMMARY")
-icon = {"PASS": "✅", "FAIL": "❌", "MARGINAL": "⚠️ "}
+status_label = {"PASS": "[PASS]", "FAIL": "[FAIL]", "MARGINAL": "[WARNING]"}
 for test, status in results.items():
-    print(f"  {icon.get(status, '?')} {test}: {status}")
+    print(f"  {status_label.get(status, '[?]')} {test}: {status}")
 
 any_fail = any(v == "FAIL" for v in results.values())
 any_marginal = any(v == "MARGINAL" for v in results.values())

@@ -59,12 +59,12 @@ def run_single(seed: int) -> dict:
         info  = result.info
         total_score += score
 
-        results[f"{level}_score"]   = round(score, 6)
+        results[f"{level}_score"]   = score
         results[f"{level}_reward"]  = round(total_reward, 2)
         results[f"{level}_cleared"] = info["total_cleared"]
         results[f"{level}_wait"]    = round(info["avg_waiting_time"], 2)
 
-    results["overall_score"] = round(total_score / len(TASK_MAP), 6)
+    results["overall_score"] = total_score / len(TASK_MAP)
     return results
 
 

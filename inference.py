@@ -61,7 +61,7 @@ def run_inference():
             "task": task_name,
             "steps": step_count,
             "total_reward": round(total_reward, 2),
-            "final_score": round(final_score, 4)
+            "final_score": final_score
         })
 
 if __name__ == "__main__":
