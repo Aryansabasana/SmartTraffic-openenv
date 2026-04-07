@@ -1,27 +1,18 @@
-FROM python:3.11-slim
+FROM python:3.10-slim
 
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    libglib2.0-0 \
-    libgomp1 \
- && rm -rf /var/lib/apt/lists/*
+# Build stability optimizations
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-RUN useradd -m -u 1000 user
-USER user
-ENV HOME=/home/user \
-    PATH=/home/user/.local/bin:$PATH \
-    PYTHONPATH=/home/user/app \
-    MPLBACKEND=Agg
+WORKDIR /app
 
-WORKDIR /home/user/app
+# Install isolated dependencies first to maximize Docker caching
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
-COPY --chown=user:user requirements.txt /home/user/app/requirements.txt
-RUN pip install --no-cache-dir --upgrade pip
-RUN pip install --no-cache-dir --prefer-binary -r requirements.txt
-
-RUN python -c "import gradio; print('gradio', gradio.__version__, 'ready')"
-
-COPY --chown=user:user . /home/user/app
+# Copy source code after dependencies to prevent cache invalidation on code change
+COPY . /app/
 
 EXPOSE 7860
-# Use uvicorn directly if needed, but python server/app.py works with the current setup
+
 CMD ["python", "server/app.py"]
