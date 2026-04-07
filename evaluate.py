@@ -48,8 +48,8 @@ def run_evaluation(base_seed=None, silent=False):
         info = result.info
         
         if not silent:
-            # Safely clamp and print raw representation to avoid .3f rounding to 1.000
-            safe_score = str(to_open_unit_interval(score))
+            # Safely clamp and format cleanly. Precision to .6f prevents "1.000" upper-bound leaks or Regex-breaking "1e-6".
+            safe_score = f"{to_open_unit_interval(score):.6f}"
             print(f"[{level}] Steps: {steps} | Total Reward: {total_reward:.2f}")
             print(f"       Cleared: {info['total_cleared']} | Avg Wait/Car: {info['avg_waiting_time']:.1f} | Emg Handled: {info['emergencies_handled']}")
             print(f"       Final Level Score (0-1): {safe_score}")
@@ -60,9 +60,9 @@ def run_evaluation(base_seed=None, silent=False):
     results["Overall"] = avg_score
     
     if not silent:
-        safe_avg = str(avg_score)
+        safe_avg = f"{avg_score:.6f}"
         print(f"==================================================")
-        print(f"Overall Average Score: {safe_avg} / 1.000")
+        print(f"Overall Average Score: {safe_avg} / 1.000000")
         print(f"==================================================\n")
     
     return results

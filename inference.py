@@ -84,8 +84,9 @@ def main():
             # Safely map to open interval using imported centralized mathematical helper
             safe_score = to_open_unit_interval(final_score)
             
-            # Use raw string conversion to avoid any f-string rounding that could produce "1.0" or "0.0"
-            formatted_score = str(safe_score)
+            # Formats precisely up to 6 decimal places. Ensures floats like 1e-6 format as 0.000001.
+            # Absolutely precludes scientific notation that breaks simple regex parsers.
+            formatted_score = f"{safe_score:.6f}"
             
             # 5. Signal Task End (lowercased 'success' boolean)
             success_str = "true" if success else "false"
