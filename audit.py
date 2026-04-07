@@ -8,7 +8,7 @@ import pathlib
 
 
 sys.path.insert(0, os.path.dirname(__file__))
-from src.tasks import EasyTask, MediumTask, HardTask
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
 from src.agent import DeterministicAgent
 from src.models import State
 
@@ -49,7 +49,8 @@ def run_single(seed=None):
         }
 
     overall = sum(scores.values()) / len(scores)
-    scores["Overall"] = overall
+    # Ensure overall score is also strictly normalized
+    scores["Overall"] = to_open_unit_interval(overall)
     return seed, scores, metrics
 
 
@@ -206,7 +207,8 @@ def run_with_agent(agent_obj, seed=999):
             if steps > 500:
                 break
         total_score += task.evaluate()
-    return total_score / len(tasks)
+    # Normalize the average of evaluations
+    return to_open_unit_interval(total_score / len(tasks))
 
 random_overall = run_with_agent(RandomAgent(), seed=999)
 delta = real_overall - random_overall

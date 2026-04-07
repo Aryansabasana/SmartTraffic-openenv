@@ -23,7 +23,7 @@ except ImportError:
     plt = None
 
 
-from src.tasks import EasyTask
+from src.tasks import EasyTask, to_open_unit_interval
 from src.models import State, StepResult
 from src.agent import DeterministicAgent, LLMAgent
 
@@ -240,11 +240,8 @@ def update_plot(history):
     ax.set_xlabel("Operational Steps", color='#888', fontsize=9)
     ax.set_ylabel("Vehicle Load", color='#888', fontsize=9)
     ax.tick_params(colors='#666', labelsize=8)
-    ax.spines['top'].set_visible(False)
-    ax.spines['right'].set_visible(False)
-    ax.spines['bottom'].set_color('#333')
-    ax.spines['left'].set_color('#333')
-    ax.grid(True, axis='y', linestyle='--', alpha=0.1)
+    ax.set_ylim(0, 1.15)
+    ax.grid(axis='y', linestyle='--', alpha=0.1)
     
     ax.legend(facecolor='#1a1a1a', edgecolor='#333', labelcolor='#ccc', fontsize=8, loc='upper right')
     plt.close(fig)
@@ -310,7 +307,7 @@ def handle_step(history, n, s, e, w, emg, emg_dir, sig, use_llm):
     
     # Composite Efficiency (Clamped 0.0 - 1.0)
     efficiency = (0.3 * pressure_factor) + (0.3 * wait_factor) + (0.4 * throughput_factor)
-    efficiency = max(0.0, min(1.0, efficiency))
+    efficiency = to_open_unit_interval(efficiency)
     
     imbalance = min(100, int((abs(q_ns - q_ew) / max(1, q_ns + q_ew)) * 100))
     congestion = min(100, int((total_q / max_cap) * 100))
@@ -340,7 +337,7 @@ def handle_step(history, n, s, e, w, emg, emg_dir, sig, use_llm):
         new_state['current_signal'],
         generate_intersection_html(new_state),
         update_plot(history),
-        round(efficiency, 3),
+        to_open_unit_interval(efficiency),
         smart_rationale,
         generate_signal_timeline(history),
         result.info['total_cleared'],
@@ -363,7 +360,7 @@ def handle_batch(history):
         })
     score = ui_env.evaluate()
     avg_d = res.info['avg_waiting_time']
-    return batch_history, update_plot(batch_history), round(score, 3), "Full Optimization Episode Completed Successfully. Performance verified.", generate_signal_timeline(batch_history), res.info['total_cleared'], f"{avg_d:.1f}s", "EPISODE COMPLETE", "VARIES", generate_imbalance_meter(50)
+    return batch_history, update_plot(batch_history), to_open_unit_interval(score), "Full Optimization Episode Completed Successfully. Performance verified.", generate_signal_timeline(batch_history), res.info['total_cleared'], f"{avg_d:.1f}s", "EPISODE COMPLETE", "VARIES", generate_imbalance_meter(50)
 
 def handle_reset():
     return [], 10, 10, 5, 5, False, "ns", "red", generate_intersection_html({'north_queue': 0, 'south_queue': 0, 'east_queue': 0, 'west_queue': 0, 'current_signal': 'red', 'emergency_vehicle_present': False}), update_plot([]), 1.0, "Ready.", generate_signal_timeline([]), 0, "0.0s", "IDLE", "0%", generate_imbalance_meter(0)

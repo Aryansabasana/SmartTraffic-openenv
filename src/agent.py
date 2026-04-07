@@ -168,8 +168,11 @@ class LLMAgent:
                     return action
             return 0 # Fallback
         except Exception as e:
-            print(f"LLM Error: {e}")
-            return 0 # Fallback safety
+            print(f"LLM Error: {e}", file=sys.stderr)
+            if os.environ.get("API_BASE_URL") and os.environ.get("API_KEY"):
+                # Explicit failure required by evaluator checklist instead of silent fallback
+                raise
+            return 0 # Fallback safety for local mode
 
     def get_action_with_explanation(self, state: State) -> tuple[int, str]:
         # Simple placeholder for LLM explanation - in production, you'd ask the LLM for the reason too.

@@ -9,7 +9,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(__file__))
-from src.tasks import EasyTask, MediumTask, HardTask
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
 from src.models import State
 
 
@@ -109,7 +109,7 @@ def run_agent(agent_type: str, difficulty: str, seed: int) -> dict:
     info  = result.info
 
     return {
-        "score":    round(score, 4),
+        "score":    to_open_unit_interval(score),
         "reward":   round(total_reward, 2),
         "cleared":  info["total_cleared"],
         "avg_wait": round(info["avg_waiting_time"], 2),
@@ -125,7 +125,7 @@ def compute_metrics(seed: int) -> dict:
             metrics[agent_name][difficulty] = run_agent(agent_name, difficulty, task_seed)
         scores = [metrics[agent_name][d]["score"] for d in TASK_CONSTRUCTORS]
         metrics[agent_name]["Overall"] = {
-            "score":    round(sum(scores) / len(scores), 4),
+            "score":    to_open_unit_interval(sum(scores) / len(scores)),
             "reward":   None,
             "cleared":  None,
             "avg_wait": None,

@@ -63,8 +63,13 @@ if __name__ == "__main__":
     e_pass = test_actual_evaluations()
     
     if h_pass and e_pass:
-        print("\n[SUCCESS] All scores are strictly within (0, 1).")
-        sys.exit(0)
+        # Check EPS specifically
+        if abs(to_open_unit_interval(1.0) - 0.995) < 1e-7:
+            print("\n[SUCCESS] All scores are strictly within (0.005, 0.995).")
+            sys.exit(0)
+        else:
+            print(f"\n[FAILURE] EPS verification failed! Expected 0.995, got {to_open_unit_interval(1.0)}")
+            sys.exit(1)
     else:
         print("\n[FAILURE] One or more scores are exactly 0.0 or 1.0.")
         sys.exit(1)

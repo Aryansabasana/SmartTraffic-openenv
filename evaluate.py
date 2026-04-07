@@ -56,7 +56,8 @@ def run_evaluation(base_seed=None, silent=False):
     
     avg_score = total_score / len(tasks)
     # Final safety clip for Overall score using centralized helper
-    avg_score = to_open_unit_interval(avg_score)
+    # Double wrap to ensure no floating point boundary issues
+    avg_score = to_open_unit_interval(to_open_unit_interval(avg_score))
     results["Overall"] = avg_score
     
     if not silent:

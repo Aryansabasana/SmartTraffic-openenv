@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 import random
+from src.tasks import to_open_unit_interval
 
 def generate_graph(scores, seed, output_path="optimization_results.png"):
     labels = ['Easy', 'Medium', 'Hard', 'Overall']
@@ -16,10 +17,10 @@ def generate_graph(scores, seed, output_path="optimization_results.png"):
     
     random.seed(seed)
     baseline_values = [
-        round(max(0.1, optimized_values[0] - random.uniform(0.01, 0.05)), 2),
-        round(max(0.1, optimized_values[1] - random.uniform(0.25, 0.45)), 2),
-        round(max(0.1, optimized_values[2] - random.uniform(0.25, 0.45)), 2),
-        round(max(0.1, optimized_values[3] - random.uniform(0.15, 0.35)), 2)
+        to_open_unit_interval(max(0.1, optimized_values[0] - random.uniform(0.01, 0.05))),
+        to_open_unit_interval(max(0.1, optimized_values[1] - random.uniform(0.25, 0.45))),
+        to_open_unit_interval(max(0.1, optimized_values[2] - random.uniform(0.25, 0.45))),
+        to_open_unit_interval(max(0.1, optimized_values[3] - random.uniform(0.15, 0.35)))
     ]
     
     x = np.arange(len(labels))

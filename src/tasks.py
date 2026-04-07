@@ -2,7 +2,7 @@ from src.environment import TrafficEnv
 from src.models import State, StepResult
 from typing import Dict, Any, Optional
 
-EPS = 1e-6
+EPS = 0.005
 
 def to_open_unit_interval(x: float) -> float:
     """

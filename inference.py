@@ -75,17 +75,18 @@ def main():
             print(f"CRITICAL: Task {task_name} failed explicitly with error: {e}", file=sys.stderr)
             success = False
         finally:
-            # 4. Final Evaluation (even on crash)
+            # Final Evaluation (even on crash)
             try:
                 final_score = task.evaluate()
             except Exception:
                 final_score = 0.5
                 
             # Safely map to open interval using imported centralized mathematical helper
-            safe_score = to_open_unit_interval(final_score)
+            # We call it twice to be absolutely sure no floating point errors occur before formatting
+            safe_score = to_open_unit_interval(to_open_unit_interval(final_score))
             
-            # Formats precisely up to 6 decimal places. Ensures floats like 1e-6 format as 0.000001.
-            # Absolutely precludes scientific notation that breaks simple regex parsers.
+            # Formats precisely up to 6 decimal places. 
+            # With EPS=0.005, the range is [0.005, 0.995], so rounding to 6 decimal places is safe.
             formatted_score = f"{safe_score:.6f}"
             
             # 5. Signal Task End (lowercased 'success' boolean)
