@@ -115,10 +115,12 @@ class LLMAgent:
              # This will trigger a failure if we're in mandatory proxy mode
              print("WARNING: No LLM API Key detected in environment symbols.", file=sys.stderr)
 
+        # Explicitly initialize with only supported arguments to avoid 'proxies=' error in some environments
         self.client = OpenAI(
             base_url=base_url,
             api_key=api_key
         )
+
         self.model = os.environ.get("MODEL_NAME", "meta-llama/Llama-3.1-8B-Instruct")
 
 
