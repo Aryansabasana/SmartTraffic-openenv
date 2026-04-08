@@ -21,6 +21,7 @@ def main():
     api_url = os.environ.get("API_BASE_URL")
     api_key = os.environ.get("API_KEY") or os.environ.get("OPENAI_API_KEY")
     is_evaluator_mode = bool(api_url and api_key)
+
     try:
         if is_evaluator_mode:
             agent = LLMAgent()
@@ -33,20 +34,27 @@ def main():
         print(f"CRITICAL: {e}", file=sys.stderr)
         sys.exit(1)
 
-    for task_name, task in [("Easy", EasyTask()), ("Medium", MediumTask()), ("Hard", HardTask())]:
+    tasks_to_run = [
+        ("Easy",   EasyTask(),   100),
+        ("Medium", MediumTask(), 200),
+        ("Hard",   HardTask(),   300),
+    ]
+
+    for task_name, task, max_steps in tasks_to_run:
         emit(f"[START] task={task_name}")
         state = task.reset()
         done = False
         step_count = 0
         success = False
+
         try:
-            while not done and step_count < 300:
+            while not done and step_count < max_steps:
                 action = agent.get_action(state)
                 result = task.step(action)
                 state = result.state
                 done = result.done
                 step_count += 1
-                safe_reward = hard_clamp(to_open_unit_interval(result.reward))
+                safe_reward = hard_clamp(result.reward)
                 done_str = "true" if done else "false"
                 emit(f"[STEP] step={step_count} reward={safe_reward:.4f} done={done_str}")
             success = True
@@ -54,11 +62,9 @@ def main():
             print(f"CRITICAL: {e}", file=sys.stderr)
         finally:
             try:
-                raw_score = task.evaluate()
-                final_score = hard_clamp(to_open_unit_interval(raw_score))
+                final_score = hard_clamp(task.evaluate())
             except Exception:
                 final_score = 0.5
-            # Absolute last-resort guard
             if not (0.0 < final_score < 1.0):
                 final_score = 0.5
             success_str = "true" if success else "false"

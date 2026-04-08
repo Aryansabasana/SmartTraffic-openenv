@@ -62,10 +62,11 @@ async def step_logic(action: int):
 
     return {
         "state": result.state.to_dict(),
-        "reward": to_open_unit_interval(result.reward),
+        "reward": max(0.02, min(0.98, to_open_unit_interval(result.reward))),
         "raw_reward": result.reward,
         "done": result.done,
         "info": safe_info,
+        "score": max(0.02, min(0.98, to_open_unit_interval(active_task.evaluate()))),
     }
 
 # API Routes
