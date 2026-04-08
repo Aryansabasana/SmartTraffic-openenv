@@ -1,6 +1,5 @@
 FROM public.ecr.aws/docker/library/python:3.10-slim
 
-# Set environment variables for build and runtime stability
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PYTHONPATH=/app \
@@ -9,15 +8,14 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 
 WORKDIR /app
 
-# Standard evaluator-safe dependency installation
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-# Copy only necessary project files
+# ✅ Add this line — forces cache bust on every build
+ARG CACHEBUST=1
+
 COPY . .
 
 EXPOSE 7860
 
 CMD ["python", "server/app.py"]
-
-
