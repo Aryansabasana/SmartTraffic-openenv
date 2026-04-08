@@ -18,4 +18,4 @@ COPY . .
 
 EXPOSE 7860
 
-CMD ["python", "server/app.py"]
+CMD ["python", "server/app.py"]# force rebuild Wed, Apr  8, 2026  9:22:45 PM
