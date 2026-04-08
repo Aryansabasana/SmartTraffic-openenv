@@ -16,15 +16,6 @@ def hard_clamp(x):
     except Exception:
         return 0.5
 
-def hard_clamp(x):
-    try:
-        v = float(x)
-        if math.isnan(v) or math.isinf(v):
-            return 0.5
-        return max(0.02, min(0.98, v))
-    except Exception:
-        return 0.5
-
 def main():
     emit("[START] task=bootstrap")
     api_url = os.environ.get("API_BASE_URL")

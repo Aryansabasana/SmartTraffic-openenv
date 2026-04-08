@@ -3,7 +3,7 @@ environment:
   name: "Smart Traffic Optimization Environment"
   id: "OpenEnv-SmartTrafficOptim-v0"
   description: "A production-ready simulation of a busy 4-way intersection mapping dynamic queue influxes to signal control to optimize wait times and clear emergencies."
-  
+
 action_space:
   type: "Discrete"
   size: 3
@@ -11,7 +11,7 @@ action_space:
     0: "All Red (pause signals for safety switching)"
     1: "Green North-South"
     2: "Green East-West"
-    
+
 observation_space:
   type: "Dict"
   schema:
@@ -28,7 +28,26 @@ observation_space:
     emergency_direction: "String"
     ns_wait_time: "Float"
     ew_wait_time: "Float"
-    
+
 reward_type:
   type: "Dense"
   description: "Rewards for clearing vehicles (+2/vehicle) and clearing emergencies (+10). Constant penalty driven by cumulative current wait lines and base timer (-0.1/step)."
+
+tasks:
+  - id: "easy"
+    name: "Easy Traffic Control"
+    description: "Control a low-traffic 4-way intersection for 100 steps. Optimize signal timing to maximize vehicle throughput."
+    difficulty: "easy"
+    max_steps: 100
+
+  - id: "medium"
+    name: "Medium Traffic Control"
+    description: "Control a congested intersection with higher arrival rates for 200 steps. Balance competing directional demands."
+    difficulty: "medium"
+    max_steps: 200
+
+  - id: "hard"
+    name: "Hard Traffic Control"
+    description: "Control a high-congestion intersection with emergency vehicles for 300 steps. Handle emergencies while maintaining throughput."
+    difficulty: "hard"
+    max_steps: 300
