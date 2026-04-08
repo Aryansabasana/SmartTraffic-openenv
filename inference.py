@@ -1,16 +1,12 @@
 import sys
 import os
 import math
-from src.tasks import EasyTask, MediumTask, HardTask
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
 from src.agent import DeterministicAgent, LLMAgent
 
 def emit(marker):
     print(marker, flush=True)
 
-def clamp(value):
-    if value is None or math.isnan(value) or math.isinf(value):
-        return 0.5
-    return max(0.05, min(0.95, float(value)))
 
 def main():
     emit("[START] task=bootstrap")
@@ -42,7 +38,7 @@ def main():
                 state = result.state
                 done = result.done
                 step_count += 1
-                safe_reward = clamp(result.reward)
+                safe_reward = to_open_unit_interval(result.reward)
                 done_str = "true" if done else "false"
                 emit(f"[STEP] step={step_count} reward={safe_reward:.2f} done={done_str}")
             success = True
@@ -50,10 +46,8 @@ def main():
             print(f"CRITICAL: {e}", file=sys.stderr)
         finally:
             try:
-                final_score = clamp(task.evaluate())
+                final_score = to_open_unit_interval(task.evaluate())
             except Exception:
-                final_score = 0.5
-            if not (0.0 < final_score < 1.0):
                 final_score = 0.5
             success_str = "true" if success else "false"
             emit(f"[END] task={task_name} score={final_score:.6f} steps={step_count} success={success_str}")
