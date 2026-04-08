@@ -2,143 +2,85 @@ from src.environment import TrafficEnv
 from src.models import State, StepResult
 from typing import Dict, Any, Optional
 
-EPS = 0.01
+EPS = 0.02
 
 def to_open_unit_interval(x: float) -> float:
-    """
-    Strictly maps any float x to the open unit interval (0, 1).
-    Handles NaN, Inf, and ensures scores are never 0 or 1.
-    """
     import math
-
-    # Handle invalid numbers
     if x is None or math.isnan(x):
-        return (1.0 - EPS) / 2 + (EPS / 2) # Midpoint without matching 'return 0.x'
+        return 0.5
     if math.isinf(x):
         return 1.0 - EPS if x > 0 else EPS
-
-    # Clamp strictly inside (0, 1) using EPS
     return max(EPS, min(1.0 - EPS, float(x)))
+
+def safe_score(score) -> float:
+    import math
+    if score is None or math.isnan(score) or math.isinf(score):
+        return 0.5
+    return max(EPS, min(1.0 - EPS, float(score)))
 
 class BaseTask:
     def __init__(self, config: Dict[str, Any]):
         self.config = config
         self.env = TrafficEnv(config)
-        
-    def reset(self, seed: Optional[int] = None) -> State:
+
+    def reset(self, seed=None):
         return self.env.reset(seed=seed)
-        
-    def step(self, action_type: int) -> StepResult:
+
+    def step(self, action_type):
         return self.env.step(action_type)
-        
-    def state(self) -> State:
+
+    def state(self):
         return self.env.state()
-        
+
     def evaluate(self) -> float:
-        total_arrived = self.env.total_cleared + max(0,
-            self.env.north + self.env.south + self.env.east + self.env.west)
+        total_cleared = self.env.total_cleared
+        remaining = max(0, self.env.north + self.env.south + self.env.east + self.env.west)
+        total_arrived = total_cleared + remaining
 
-        if total_arrived == 0 and self.env.total_cleared == 0:
-            score = 1.0
-            import math
-            if score is None or math.isnan(score) or math.isinf(score):
-                return 0.5
-            if score <= 0.0:
-                return 0.01
-            if score >= 1.0:
-                return 0.99
-            return float(score)
+        if total_arrived == 0 and total_cleared == 0:
+            return 0.5
 
-        # Accurately map max clearance logic to prevent low-traffic penalties & high-traffic inflation.
-        expected_arrived = self.env.max_time * self.config.get("arrival_rate", 2.0) * 4 * self.config.get("congestion_multiplier", 1.0)
-        max_possible = min(float(total_arrived), float(expected_arrived))
-        clear_raw = (float(self.env.total_cleared) / float(max_possible)) if max_possible > 0 else 0.5
+        arrival_rate = self.config.get("arrival_rate", 2.0)
+        congestion = self.config.get("congestion_multiplier", 1.0)
+        expected_arrived = self.env.max_time * arrival_rate * 4 * congestion
+        max_possible = max(1.0, min(float(total_arrived), float(expected_arrived)))
+
+        clear_raw = float(total_cleared) / max_possible
         clear_score = to_open_unit_interval(clear_raw)
 
-        avg_wait = self.env.total_waiting_time / max(1, self.env.total_cleared)
+        avg_wait = self.env.total_waiting_time / max(1, total_cleared)
         max_wait = 30.0
         wait_raw = max(0.0, 1.0 - (avg_wait / max_wait))
         wait_score = to_open_unit_interval(wait_raw)
 
         if self.config.get("emergency_prob", 0) > 0:
-            handled = self.env.emergencies_handled
             total_emergencies = self.env.total_emergencies_generated
-            
-            em_raw = (float(handled) / float(total_emergencies)) if total_emergencies > 0 else 0.5
+            handled = self.env.emergencies_handled
+            em_raw = float(handled) / float(total_emergencies) if total_emergencies > 0 else 0.5
             em_score = to_open_unit_interval(em_raw)
-            
-            # User defined balanced score
             total = (0.5 * clear_score) + (0.3 * wait_score) + (0.2 * em_score)
         else:
-            # Rescaled symmetrically if no emergency component applies
             total = (0.625 * clear_score) + (0.375 * wait_score)
 
-        score = total
-        import math
-        if score is None or math.isnan(score) or math.isinf(score):
-            return 0.5
-        if score <= 0.0:
-            return 0.01
-        if score >= 1.0:
-            return 0.99
-        return float(score)
+        return safe_score(total)
 
 class EasyTask(BaseTask):
     def __init__(self):
-        super().__init__({
-            "max_time": 100,
-            "arrival_rate": 2.0,
-            "congestion_multiplier": 1.0,
-            "emergency_prob": 0.0
-        })
+        super().__init__({"max_time": 100, "arrival_rate": 2.0, "congestion_multiplier": 1.0, "emergency_prob": 0.0})
 
-    def evaluate(self) -> float:
-        score = super().evaluate()
-        import math
-        if score is None or math.isnan(score) or math.isinf(score):
-            return 0.5
-        if score <= 0.0:
-            return 0.01
-        if score >= 1.0:
-            return 0.99
-        return float(score)
+    def evaluate(self):
+        return safe_score(super().evaluate())
 
 class MediumTask(BaseTask):
     def __init__(self):
-        super().__init__({
-            "max_time": 200,
-            "arrival_rate": 2.2,
-            "congestion_multiplier": 1.5, 
-            "emergency_prob": 0.0
-        })
+        super().__init__({"max_time": 200, "arrival_rate": 2.2, "congestion_multiplier": 1.5, "emergency_prob": 0.0})
 
-    def evaluate(self) -> float:
-        score = super().evaluate()
-        import math
-        if score is None or math.isnan(score) or math.isinf(score):
-            return 0.5
-        if score <= 0.0:
-            return 0.01
-        if score >= 1.0:
-            return 0.99
-        return float(score)
+    def evaluate(self):
+        return safe_score(super().evaluate())
 
 class HardTask(BaseTask):
     def __init__(self):
-        super().__init__({
-            "max_time": 300,
-            "arrival_rate": 2.0, 
-            "congestion_multiplier": 1.75, 
-            "emergency_prob": 0.08
-        })
+        super().__init__({"max_time": 300, "arrival_rate": 2.0, "congestion_multiplier": 1.75, "emergency_prob": 0.08})
 
-    def evaluate(self) -> float:
-        score = super().evaluate()
-        import math
-        if score is None or math.isnan(score) or math.isinf(score):
-            return 0.5
-        if score <= 0.0:
-            return 0.01
-        if score >= 1.0:
-            return 0.99
-        return float(score)
+    def evaluate(self):
+        return safe_score(super().evaluate())
