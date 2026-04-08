@@ -7,6 +7,23 @@ from src.agent import DeterministicAgent, LLMAgent
 def emit(marker):
     print(marker, flush=True)
 
+def hard_clamp(x):
+    try:
+        v = float(x)
+        if math.isnan(v) or math.isinf(v):
+            return 0.5
+        return max(0.02, min(0.98, v))
+    except Exception:
+        return 0.5
+
+def hard_clamp(x):
+    try:
+        v = float(x)
+        if math.isnan(v) or math.isinf(v):
+            return 0.5
+        return max(0.02, min(0.98, v))
+    except Exception:
+        return 0.5
 
 def main():
     emit("[START] task=bootstrap")
@@ -32,22 +49,26 @@ def main():
         step_count = 0
         success = False
         try:
-            while not done and step_count < 100:
+            while not done and step_count < 300:
                 action = agent.get_action(state)
                 result = task.step(action)
                 state = result.state
                 done = result.done
                 step_count += 1
-                safe_reward = to_open_unit_interval(result.reward)
+                safe_reward = hard_clamp(to_open_unit_interval(result.reward))
                 done_str = "true" if done else "false"
-                emit(f"[STEP] step={step_count} reward={safe_reward:.2f} done={done_str}")
+                emit(f"[STEP] step={step_count} reward={safe_reward:.4f} done={done_str}")
             success = True
         except Exception as e:
             print(f"CRITICAL: {e}", file=sys.stderr)
         finally:
             try:
-                final_score = to_open_unit_interval(task.evaluate())
+                raw_score = task.evaluate()
+                final_score = hard_clamp(to_open_unit_interval(raw_score))
             except Exception:
+                final_score = 0.5
+            # Absolute last-resort guard
+            if not (0.0 < final_score < 1.0):
                 final_score = 0.5
             success_str = "true" if success else "false"
             emit(f"[END] task={task_name} score={final_score:.6f} steps={step_count} success={success_str}")

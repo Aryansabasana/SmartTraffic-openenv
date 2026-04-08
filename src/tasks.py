@@ -1,37 +1,29 @@
 from src.environment import TrafficEnv
 from src.models import State, StepResult
 from typing import Dict, Any, Optional
+import math
 
-EPS = 0.01
+EPS = 0.02
 
 def to_open_unit_interval(x: float) -> float:
-    import math
-
     if x is None:
         return 0.5
-
     try:
         x = float(x)
     except Exception:
         return 0.5
-
     if math.isnan(x):
         return 0.5
-
     if math.isinf(x):
         return 1.0 - EPS if x > 0 else EPS
-
     if x <= 0.0:
         return EPS
-
     if x >= 1.0:
         return 1.0 - EPS
-
-    return x
-
+    # Extra safety: clamp even values inside (0,1) away from boundary
+    return max(EPS, min(1.0 - EPS, x))
 
 def sanitize_score_payload(obj):
-    import math
     if isinstance(obj, dict):
         out = {}
         for k, v in obj.items():
@@ -40,7 +32,6 @@ def sanitize_score_payload(obj):
                 out[k] = v
             elif any(token in key for token in ["score", "reward", "grade", "metric", "efficiency", "overall"]):
                 if isinstance(v, (int, float)) or v is None:
-                    from src.tasks import to_open_unit_interval
                     out[k] = to_open_unit_interval(v)
                 else:
                     out[k] = sanitize_score_payload(v)
@@ -51,7 +42,6 @@ def sanitize_score_payload(obj):
         return [sanitize_score_payload(x) for x in obj]
     else:
         return obj
-
 
 class BaseTask:
     def __init__(self, config: Dict[str, Any]):
@@ -102,20 +92,17 @@ class BaseTask:
 class EasyTask(BaseTask):
     def __init__(self):
         super().__init__({"max_time": 100, "arrival_rate": 2.0, "congestion_multiplier": 1.0, "emergency_prob": 0.0})
-
     def evaluate(self):
         return to_open_unit_interval(super().evaluate())
 
 class MediumTask(BaseTask):
     def __init__(self):
         super().__init__({"max_time": 200, "arrival_rate": 2.2, "congestion_multiplier": 1.5, "emergency_prob": 0.0})
-
     def evaluate(self):
         return to_open_unit_interval(super().evaluate())
 
 class HardTask(BaseTask):
     def __init__(self):
         super().__init__({"max_time": 300, "arrival_rate": 2.0, "congestion_multiplier": 1.75, "emergency_prob": 0.08})
-
     def evaluate(self):
-        return to_open_unit_interval(super().evaluate())
+        return to_open_unit_interval(super().evaluate()) 

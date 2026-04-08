@@ -31,10 +31,10 @@ def assert_recursive_safe(obj, path="root"):
 
 def test_canonical_helper():
     print("Testing canonical helper...")
-    EPS = 0.01
+    EPS = 0.02
     test_cases = [
         (0.0, EPS), (1.0, 1.0 - EPS), (-1.0, EPS), (2.0, 1.0 - EPS),
-        (float('nan'), 0.5), (float('inf'), 0.99), (float('-inf'), 0.01), (None, 0.5)
+        (float('nan'), 0.5), (float('inf'), 0.98), (float('-inf'), 0.02), (None, 0.5)
     ]
     for val, expected in test_cases:
         actual = to_open_unit_interval(val)
