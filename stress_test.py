@@ -65,7 +65,9 @@ def run_single(seed: int) -> dict:
         results[f"{level}_wait"]    = round(info["avg_waiting_time"], 2)
 
     results["overall_score"] = to_open_unit_interval(total_score / len(TASK_MAP))
-    return results
+    
+    from src.tasks import sanitize_score_payload
+    return sanitize_score_payload(results)
 
 
 

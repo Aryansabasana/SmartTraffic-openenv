@@ -23,7 +23,7 @@ except ImportError:
     plt = None
 
 
-from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval, sanitize_score_payload
 from src.models import State, StepResult
 from src.agent import DeterministicAgent, LLMAgent
 
@@ -38,25 +38,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-def sanitize_score_payload(obj):
-    if isinstance(obj, dict):
-        out = {}
-        for k, v in obj.items():
-            key = str(k).lower()
-            if key.startswith("raw_"):
-                out[k] = v
-            elif any(token in key for token in ["score", "reward", "grade", "metric", "efficiency", "overall"]):
-                if isinstance(v, (int, float)) or v is None:
-                    out[k] = to_open_unit_interval(v)
-                else:
-                    out[k] = sanitize_score_payload(v)
-            else:
-                out[k] = sanitize_score_payload(v)
-        return out
-    elif isinstance(obj, list):
-        return [sanitize_score_payload(x) for x in obj]
-    else:
-        return obj
 
 # API Helper
 async def reset_logic(level: str = "easy", seed: Optional[int] = None):

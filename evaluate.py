@@ -50,7 +50,8 @@ def run_evaluation(base_seed=None, silent=False):
         if not silent:
             # Safely clamp and format cleanly. Precision to .6f prevents "1.000" upper-bound leaks or Regex-breaking "1e-6".
             safe_score = f"{to_open_unit_interval(score):.6f}"
-            print(f"[{level}] Steps: {steps} | Total Reward: {total_reward:.2f}")
+            safe_reward_print = to_open_unit_interval(total_reward)
+            print(f"[{level}] Steps: {steps} | Total Reward: {safe_reward_print:.2f}")
             print(f"       Cleared: {info['total_cleared']} | Avg Wait/Car: {info['avg_waiting_time']:.1f} | Emg Handled: {info['emergencies_handled']}")
             print(f"       Final Level Score (0-1): {safe_score}")
     
@@ -65,7 +66,8 @@ def run_evaluation(base_seed=None, silent=False):
         print(f"Overall Average Score: {safe_avg} / 1.000000")
         print(f"==================================================\n")
     
-    return results
+    from src.tasks import sanitize_score_payload
+    return sanitize_score_payload(results)
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Evaluate the Smart Traffic Agent")

@@ -49,9 +49,11 @@ def run_single(seed=None):
         }
 
     overall = sum(scores.values()) / len(scores)
-    # Ensure overall score is also strictly normalized
     scores["Overall"] = to_open_unit_interval(overall)
-    return seed, scores, metrics
+    
+    from src.tasks import sanitize_score_payload
+    res = sanitize_score_payload({"seed": seed, "scores": scores, "metrics": metrics})
+    return res["seed"], res["scores"], res["metrics"]
 
 
 def sep(title):
@@ -282,7 +284,7 @@ if case_a and case_b and case_c:
 else:
     issues = []
     if not case_a: issues.append(f"Zero-traffic score {zero_score:.3f} unexpectedly low")
-    if not case_b: issues.append(f"Congested score {cong_score:.3f} \u2265 zero-traffic score {zero_score:.3f}")
+    if not case_b: issues.append(f"Congested score {cong_score:.3f} >= zero-traffic score {zero_score:.3f}")
     if not case_c: issues.append("No emergencies handled in hard task")
     print(f"\n[FAIL] TEST 6: EXTREME SCENARIOS: {'; '.join(issues)}")
     results["Extreme Cases"] = "FAIL"

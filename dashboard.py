@@ -108,12 +108,14 @@ def run_agent(agent_type: str, difficulty: str, seed: int) -> dict:
     score = task.evaluate()
     info  = result.info
 
-    return {
+    from src.tasks import sanitize_score_payload
+    raw_res = {
         "score":    to_open_unit_interval(score),
         "reward":   round(total_reward, 2),
         "cleared":  info["total_cleared"],
         "avg_wait": round(info["avg_waiting_time"], 2),
     }
+    return sanitize_score_payload(raw_res)
 
 
 def compute_metrics(seed: int) -> dict:
@@ -130,7 +132,8 @@ def compute_metrics(seed: int) -> dict:
             "cleared":  None,
             "avg_wait": None,
         }
-    return metrics
+    from src.tasks import sanitize_score_payload
+    return sanitize_score_payload(metrics)
 
 
 
