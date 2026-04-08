@@ -83,11 +83,19 @@ def main():
                 final_score = 0.5
                 
             # Extreme defensive mapping to open interval [0.01, 0.99] at the final print site
-            safe_final = to_open_unit_interval(final_score)
+            import math
+            
+            if final_score is None or math.isnan(final_score) or math.isinf(final_score):
+                safe_score = 0.5
+            else:
+                safe_score = max(0.01, min(0.99, float(final_score)))
+            
+            # overwrite original score to prevent leakage
+            final_score = safe_score
             
             # 5. Signal Task End (lowercased 'success' boolean, precision .6f)
             success_str = "true" if success else "false"
-            emit(f"[END] task={task_name} score={safe_final:.6f} steps={step_count} success={success_str}")
+            emit(f"[END] task={task_name} score={final_score:.6f} steps={step_count} success={success_str}")
 
 
     # Explicit exit for clean terminator signal
