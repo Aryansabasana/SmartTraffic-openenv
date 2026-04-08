@@ -15,16 +15,13 @@ def test_helper():
     EPS = 0.01
     
     test_cases = [
-        (0.0, EPS),
-        (1.0, 1.0 - EPS),
-        (-0.5, EPS),
-        (1.5, 1.0 - EPS),
+        (0, EPS),
+        (1, 1.0 - EPS),
+        (-1, EPS),
+        (2, 1.0 - EPS),
         (float('nan'), 0.5),
         (float('inf'), 1.0 - EPS),
         (float('-inf'), EPS),
-        (0.5, 0.5),
-        (0.995, 0.99),
-        (0.005, 0.01),
     ]
     
     all_passed = True

@@ -41,14 +41,17 @@ app.add_middleware(
 # API Helper
 async def reset_logic(level: str = "easy", seed: Optional[int] = None):
     global active_task
-    if level == "easy":
+    lvl = (level or "easy").lower()
+
+    if lvl == "easy":
         active_task = EasyTask()
-    elif level == "medium":
+    elif lvl == "medium":
         active_task = MediumTask()
-    elif level == "hard":
+    elif lvl == "hard":
         active_task = HardTask()
     else:
-        raise HTTPException(status_code=400, detail="Unknown validation level")
+        raise HTTPException(status_code=400, detail=f"Unknown level: {level}")
+
     active_task.reset(seed=seed)
     return active_task.state().to_dict()
 
