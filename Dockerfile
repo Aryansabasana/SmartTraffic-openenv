@@ -1,4 +1,5 @@
 FROM public.ecr.aws/docker/library/python:3.10-slim
+ARG CACHEBUST=1
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
@@ -20,3 +21,4 @@ EXPOSE 7860
 
 # force rebuild Wed, Apr  8, 2026  9:22:45 PM
 CMD ["python", "server/app.py"]
+ARG CACHEBUST=1775664173
