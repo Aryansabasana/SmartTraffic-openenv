@@ -39,7 +39,15 @@ class BaseTask:
             self.env.north + self.env.south + self.env.east + self.env.west)
 
         if total_arrived == 0 and self.env.total_cleared == 0:
-            return to_open_unit_interval(1.0) # High score for empty traffic
+            score = 1.0
+            import math
+            if score is None or math.isnan(score) or math.isinf(score):
+                return 0.5
+            if score <= 0.0:
+                return 0.01
+            if score >= 1.0:
+                return 0.99
+            return float(score)
 
         # Accurately map max clearance logic to prevent low-traffic penalties & high-traffic inflation.
         expected_arrived = self.env.max_time * self.config.get("arrival_rate", 2.0) * 4 * self.config.get("congestion_multiplier", 1.0)
@@ -65,7 +73,15 @@ class BaseTask:
             # Rescaled symmetrically if no emergency component applies
             total = (0.625 * clear_score) + (0.375 * wait_score)
 
-        return to_open_unit_interval(total)
+        score = total
+        import math
+        if score is None or math.isnan(score) or math.isinf(score):
+            return 0.5
+        if score <= 0.0:
+            return 0.01
+        if score >= 1.0:
+            return 0.99
+        return float(score)
 
 class EasyTask(BaseTask):
     def __init__(self):
@@ -78,7 +94,14 @@ class EasyTask(BaseTask):
 
     def evaluate(self) -> float:
         score = super().evaluate()
-        return to_open_unit_interval(score)
+        import math
+        if score is None or math.isnan(score) or math.isinf(score):
+            return 0.5
+        if score <= 0.0:
+            return 0.01
+        if score >= 1.0:
+            return 0.99
+        return float(score)
 
 class MediumTask(BaseTask):
     def __init__(self):
@@ -91,7 +114,14 @@ class MediumTask(BaseTask):
 
     def evaluate(self) -> float:
         score = super().evaluate()
-        return to_open_unit_interval(score)
+        import math
+        if score is None or math.isnan(score) or math.isinf(score):
+            return 0.5
+        if score <= 0.0:
+            return 0.01
+        if score >= 1.0:
+            return 0.99
+        return float(score)
 
 class HardTask(BaseTask):
     def __init__(self):
@@ -104,4 +134,11 @@ class HardTask(BaseTask):
 
     def evaluate(self) -> float:
         score = super().evaluate()
-        return to_open_unit_interval(score)
+        import math
+        if score is None or math.isnan(score) or math.isinf(score):
+            return 0.5
+        if score <= 0.0:
+            return 0.01
+        if score >= 1.0:
+            return 0.99
+        return float(score)
