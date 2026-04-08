@@ -1,4 +1,5 @@
 import random
+import math
 import numpy as np
 from typing import Dict, Any, Optional
 from src.models import State, Action, StepResult
@@ -68,7 +69,8 @@ class TrafficEnv:
         
     def step(self, action_idx: int) -> StepResult:
         if self.done:
-            return StepResult(self.state(), 0, True, {"msg": "Done"})
+            reward = 0.5
+            return StepResult(self.state(), reward, True, {"msg": "Done"})
             
         self.prev_ns_total = self.north + self.south
         self.prev_ew_total = self.east + self.west
@@ -194,13 +196,27 @@ class TrafficEnv:
             
         self.reward_trends.append(reward)
             
+        # Final safety clamp for intermediate reward
+        if reward is None or math.isnan(reward) or math.isinf(reward):
+            reward = 0.5
+        elif reward <= 0.0:
+            reward = 0.01
+        elif reward >= 1.0:
+            reward = 0.99
+
+        def safe_val(v):
+            if v is None or math.isnan(v) or math.isinf(v): return 0.5
+            return max(0.01, min(0.99, float(v)))
+
+        rt_avg = sum(self.reward_trends[-10:]) / 10 if self.reward_trends else 0.5
+            
         info = {
             "total_cleared": self.total_cleared,
             "cleared_this_step": cleared_this_step,
             "avg_waiting_time": self.total_waiting_time / max(1, self.total_cleared),
             "emergencies_handled": self.emergencies_handled,
             "total_emergencies": self.total_emergencies_generated,
-            "reward_trend_avg": sum(self.reward_trends[-10:]) / 10 if self.reward_trends else 0
+            "reward_trend_avg": safe_val(rt_avg)
         }
             
         return StepResult(self.state(), reward, self.done, info)
