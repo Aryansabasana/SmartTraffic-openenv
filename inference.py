@@ -65,8 +65,6 @@ def main():
                 final_score = hard_clamp(task.evaluate())
             except Exception:
                 final_score = 0.5
-            if not (0.0 < final_score < 1.0):
-                final_score = 0.5
             success_str = "true" if success else "false"
             emit(f"[END] task={task_name} score={final_score:.6f} steps={step_count} success={success_str}")
 

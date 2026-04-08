@@ -5,38 +5,30 @@ import math
 
 EPS = 0.02
 
-def to_open_unit_interval(x: float) -> float:
-    if x is None:
-        return 0.5
+def hard_clamp(x):
+    import math
     try:
-        x = float(x)
+        v = float(x)
+        if math.isnan(v) or math.isinf(v):
+            return 0.5
+        return max(0.02, min(0.98, v))
     except Exception:
         return 0.5
-    if math.isnan(x):
-        return 0.5
-    if math.isinf(x):
-        return 1.0 - EPS if x > 0 else EPS
-    if x <= 0.0:
-        return EPS
-    if x >= 1.0:
-        return 1.0 - EPS
-    # Extra safety: clamp even values inside (0,1) away from boundary
-    return max(EPS, min(1.0 - EPS, x))
+
+def to_open_unit_interval(x: float) -> float:
+    return hard_clamp(x)
 
 def sanitize_score_payload(obj):
     if isinstance(obj, dict):
         out = {}
         for k, v in obj.items():
-            key = str(k).lower()
-            if key.startswith("raw_"):
-                out[k] = v
-            elif any(token in key for token in ["score", "reward", "grade", "metric", "efficiency", "overall"]):
-                if isinstance(v, (int, float)) or v is None:
-                    out[k] = to_open_unit_interval(v)
-                else:
-                    out[k] = sanitize_score_payload(v)
-            else:
+            if isinstance(v, (dict, list)):
                 out[k] = sanitize_score_payload(v)
+            else:
+                if any(x in str(k).lower() for x in ["score", "reward", "efficiency", "metric", "overall"]) and not str(k).startswith("raw_"):
+                    out[k] = hard_clamp(v)
+                else:
+                    out[k] = v
         return out
     elif isinstance(obj, list):
         return [sanitize_score_payload(x) for x in obj]

@@ -76,7 +76,7 @@ class TrafficEnv:
         self.prev_ew_total = self.east + self.west
             
         action = Action(action_idx)
-        reward = 0.0
+        reward = 0.5
         
         prev_signal = self.current_signal
         
@@ -200,9 +200,9 @@ class TrafficEnv:
         if reward is None or math.isnan(reward) or math.isinf(reward):
             reward = 0.5
         elif reward <= 0.0:
-            reward = 0.01
+            reward = 0.02
         elif reward >= 1.0:
-            reward = 0.99
+            reward = 0.98
 
         def safe_val(v):
             if v is None or math.isnan(v) or math.isinf(v): return 0.5

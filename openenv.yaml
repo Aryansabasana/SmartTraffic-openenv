@@ -39,15 +39,18 @@ tasks:
     description: "Control a low-traffic 4-way intersection for 100 steps. Optimize signal timing to maximize vehicle throughput."
     difficulty: "easy"
     max_steps: 100
+    grader: "src.tasks.EasyTask"
 
   - id: "medium"
     name: "Medium Traffic Control"
     description: "Control a congested intersection with higher arrival rates for 200 steps. Balance competing directional demands."
     difficulty: "medium"
     max_steps: 200
+    grader: "src.tasks.MediumTask"
 
   - id: "hard"
     name: "Hard Traffic Control"
     description: "Control a high-congestion intersection with emergency vehicles for 300 steps. Handle emergencies while maintaining throughput."
     difficulty: "hard"
     max_steps: 300
+    grader: "src.tasks.HardTask"

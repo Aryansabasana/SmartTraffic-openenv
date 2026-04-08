@@ -23,7 +23,7 @@ except ImportError:
     plt = None
 
 
-from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval, sanitize_score_payload
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval, sanitize_score_payload, hard_clamp
 from src.models import State, StepResult
 from src.agent import DeterministicAgent, LLMAgent
 
@@ -54,19 +54,27 @@ async def reset_logic(level: str = "easy", seed: Optional[int] = None):
         raise HTTPException(status_code=400, detail=f"Unknown level: {level}")
 
     active_task.reset(seed=seed)
-    return active_task.state().to_dict()
+    return {
+        "state": active_task.state().to_dict(),
+        "reward": 0.5,
+        "score": 0.5,
+        "done": False,
+        "info": {}
+    }
 
 async def step_logic(action: int):
     result = active_task.step(action)
-    safe_info = sanitize_score_payload(result.info)
+    
+    score_val = hard_clamp(to_open_unit_interval(active_task.evaluate()))
+    reward_val = hard_clamp(to_open_unit_interval(result.reward))
 
     return {
         "state": result.state.to_dict(),
-        "reward": max(0.02, min(0.98, to_open_unit_interval(result.reward))),
+        "reward": reward_val,
+        "score": score_val,
         "raw_reward": result.reward,
         "done": result.done,
-        "info": safe_info,
-        "score": max(0.02, min(0.98, to_open_unit_interval(active_task.evaluate()))),
+        "info": sanitize_score_payload(result.info),
     }
 
 # API Routes
