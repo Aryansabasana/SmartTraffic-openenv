@@ -44,17 +44,20 @@ class BaseTask:
         # Accurately map max clearance logic to prevent low-traffic penalties & high-traffic inflation.
         expected_arrived = self.env.max_time * self.config.get("arrival_rate", 2.0) * 4 * self.config.get("congestion_multiplier", 1.0)
         max_possible = min(float(total_arrived), float(expected_arrived))
-        clear_score = min(1.0, self.env.total_cleared / max(1.0, max_possible))
+        clear_raw = (float(self.env.total_cleared) / float(max_possible)) if max_possible > 0 else 0.5
+        clear_score = to_open_unit_interval(clear_raw)
 
         avg_wait = self.env.total_waiting_time / max(1, self.env.total_cleared)
         max_wait = 30.0
-        wait_score = max(0.0, 1.0 - (avg_wait / max_wait))
+        wait_raw = max(0.0, 1.0 - (avg_wait / max_wait))
+        wait_score = to_open_unit_interval(wait_raw)
 
         if self.config.get("emergency_prob", 0) > 0:
             handled = self.env.emergencies_handled
             total_emergencies = self.env.total_emergencies_generated
             
-            em_score = (handled / max(1, total_emergencies)) if total_emergencies > 0 else 1.0
+            em_raw = (float(handled) / float(total_emergencies)) if total_emergencies > 0 else 0.5
+            em_score = to_open_unit_interval(em_raw)
             
             # User defined balanced score
             total = (0.5 * clear_score) + (0.3 * wait_score) + (0.2 * em_score)
@@ -73,6 +76,10 @@ class EasyTask(BaseTask):
             "emergency_prob": 0.0
         })
 
+    def evaluate(self) -> float:
+        score = super().evaluate()
+        return to_open_unit_interval(score)
+
 class MediumTask(BaseTask):
     def __init__(self):
         super().__init__({
@@ -82,6 +89,10 @@ class MediumTask(BaseTask):
             "emergency_prob": 0.0
         })
 
+    def evaluate(self) -> float:
+        score = super().evaluate()
+        return to_open_unit_interval(score)
+
 class HardTask(BaseTask):
     def __init__(self):
         super().__init__({
@@ -90,3 +101,7 @@ class HardTask(BaseTask):
             "congestion_multiplier": 1.75, 
             "emergency_prob": 0.08
         })
+
+    def evaluate(self) -> float:
+        score = super().evaluate()
+        return to_open_unit_interval(score)
