@@ -8,6 +8,7 @@ import re
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
+from server.app import step_logic, reset_logic
 
 def test_helper():
     print("--- Testing to_open_unit_interval ---")
@@ -101,9 +102,15 @@ def test_inference_stdout():
         # Find all [END] signals
         end_signals = re.findall(r"\[END\] task=(\w+) score=([\d\.]+)", stdout)
         
-        if not end_signals:
-            print("[FAIL] No [END] signals found in inference.py output!")
+        if len(end_signals) != 3:
+            print(f"[FAIL] Expected 3 [END] signals, but found {len(end_signals)}!")
             print("STDOUT:", stdout)
+            return False
+            
+        expected_tasks = {"Easy", "Medium", "Hard"}
+        found_tasks = {t for t, _ in end_signals}
+        if expected_tasks != found_tasks:
+            print(f"[FAIL] Missing expected tasks. Expected: {expected_tasks}, Found: {found_tasks}")
             return False
             
         all_passed = True
@@ -126,12 +133,39 @@ def test_inference_stdout():
         print(f"[ERROR] during inference test: {e}")
         return False
 
+def test_api_step_logic():
+    print("\n--- Testing API step_logic ---")
+    import asyncio
+    
+    async def run_test():
+        await reset_logic("easy")
+        res = await step_logic(0)
+        
+        reward = res["reward"]
+        if not (0.0 < reward < 1.0):
+            print(f"[FAIL] step_logic returned reward {reward} out of range!")
+            return False
+        
+        raw_reward = res.get("raw_reward")
+        if raw_reward is None:
+            print("[FAIL] step_logic missing 'raw_reward' field!")
+            return False
+            
+        print(f"[PASS] step_logic returned reward {reward:.6f} with raw_reward {raw_reward}")
+        return True
+
+    passed = asyncio.run(run_test())
+    if passed:
+        print("[OK] API step_logic validation passed.")
+    return passed
+
 if __name__ == "__main__":
     h_ok = test_helper()
     t_ok = test_tasks()
     i_ok = test_inference_stdout()
+    a_ok = test_api_step_logic()
     
-    if h_ok and t_ok and i_ok:
+    if h_ok and t_ok and i_ok and a_ok:
         print("\nSUCCESS: ALL SCORING VALIDATION TESTS PASSED.")
         sys.exit(0)
     else:

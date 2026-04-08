@@ -23,7 +23,7 @@ except ImportError:
     plt = None
 
 
-from src.tasks import EasyTask, to_open_unit_interval
+from src.tasks import EasyTask, MediumTask, HardTask, to_open_unit_interval
 from src.models import State, StepResult
 from src.agent import DeterministicAgent, LLMAgent
 
@@ -41,6 +41,14 @@ app.add_middleware(
 # API Helper
 async def reset_logic(level: str = "easy", seed: Optional[int] = None):
     global active_task
+    if level == "easy":
+        active_task = EasyTask()
+    elif level == "medium":
+        active_task = MediumTask()
+    elif level == "hard":
+        active_task = HardTask()
+    else:
+        raise HTTPException(status_code=400, detail="Unknown validation level")
     active_task.reset(seed=seed)
     return active_task.state().to_dict()
 
@@ -48,7 +56,8 @@ async def step_logic(action: int):
     result = active_task.step(action)
     return {
         "state": result.state.to_dict(),
-        "reward": result.reward,
+        "reward": to_open_unit_interval(result.reward),
+        "raw_reward": result.reward,
         "done": result.done,
         "info": result.info
     }
