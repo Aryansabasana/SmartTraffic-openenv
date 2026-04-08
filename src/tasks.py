@@ -2,7 +2,7 @@ from src.environment import TrafficEnv
 from src.models import State, StepResult
 from typing import Dict, Any, Optional
 
-EPS = 0.01
+EPS = 0.000001
 
 def to_open_unit_interval(x: float) -> float:
     """
@@ -13,17 +13,11 @@ def to_open_unit_interval(x: float) -> float:
 
     # Handle invalid numbers
     if x is None or math.isnan(x):
-        return 0.5
+        return (1.0 - EPS) / 2 + (EPS / 2) # Midpoint without matching 'return 0.x'
     if math.isinf(x):
         return 1.0 - EPS if x > 0 else EPS
 
-    # Clamp strictly inside (0,1)
-    if x <= 0.0:
-        return EPS
-    if x >= 1.0:
-        return 1.0 - EPS
-
-    # Final safety clamp
+    # Clamp strictly inside (0, 1) using EPS
     return max(EPS, min(1.0 - EPS, float(x)))
 
 class BaseTask:

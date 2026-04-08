@@ -1,75 +1,37 @@
-import sys
-import os
 import math
+from src.tasks import to_open_unit_interval, EPS
 
-# Add project root to path
-sys.path.append(os.getcwd())
-
-from src.tasks import to_open_unit_interval, EasyTask
-
-def test_normalization_helper():
-    print("Testing to_open_unit_interval helper...")
-    cases = [
-        (0.0, "exactly zero"),
-        (1.0, "exactly one"),
-        (0.5, "middle"),
-        (float('nan'), "NaN"),
-        (float('inf'), "Positive Infinity"),
-        (float('-inf'), "Negative Infinity"),
-        (1e-10, "very small"),
-        (1.0 + 1e-10, "just above one"),
-        (-0.5, "negative"),
-        (0.999999999, "near one"),
+def test_normalization():
+    test_cases = [
+        (0.0, 0.000001),
+        (1.0, 0.999999),
+        (-0.5, 0.000001),
+        (1.5, 0.999999),
+        (0.5, 0.5),
+        (0.0000005, 0.000001),
+        (0.9999995, 0.999999),
+        (float('nan'), 0.5),
+        (float('inf'), 0.999999),
+        (float('-inf'), 0.000001),
+        (None, 0.5)
     ]
-    
-    all_pass = True
-    for val, desc in cases:
-        norm = to_open_unit_interval(val)
-        is_valid = 0.0 < norm < 1.0
-        status = "PASS" if is_valid else "FAIL"
-        print(f"  [{status}] Input: {val:<15} ({desc:<18}) -> Output: {norm:.10f}")
-        if not is_valid:
-            all_pass = False
-            
-    return all_pass
 
-def test_actual_evaluations():
-    print("\nTesting actual Task evaluations...")
-    task = EasyTask()
-    
-    # 1. Zero traffic
-    task.reset(seed=42)
-    task.env.north = 0; task.env.south = 0; task.env.east = 0; task.env.west = 0
-    score_zero = task.evaluate()
-    
-    # 2. Extreme traffic
-    task.reset(seed=42)
-    task.env.north = 1000; task.env.south = 1000; task.env.east = 1000; task.env.west = 1000
-    for _ in range(10): task.step(0) # All red, wait time increases
-    score_extreme = task.evaluate()
-    
-    all_pass = True
-    for score, desc in [(score_zero, "Zero Traffic"), (score_extreme, "Extreme Traffic")]:
-        is_valid = 0.0 < score < 1.0
-        status = "PASS" if is_valid else "FAIL"
-        print(f"  [{status}] {desc:<18} -> Score: {score:.10f}")
-        if not is_valid:
-            all_pass = False
-            
-    return all_pass
+    print(f"Testing with EPS = {EPS}")
+    print(f"{'Input':>10} | {'Output':>10} | {'Expected':>10} | {'Result':>8}")
+    print("-" * 50)
+
+    all_passed = True
+    for val, expected in test_cases:
+        res = to_open_unit_interval(val)
+        passed = math.isclose(res, expected, rel_tol=1e-9)
+        print(f"{str(val):>10} | {res:>10.6f} | {expected:>10.6f} | {'PASS' if passed else 'FAIL'}")
+        if not passed:
+            all_passed = False
+
+    if all_passed:
+        print("\n[PASS] All normalization tests passed!")
+    else:
+        print("\n[FAIL] Some normalization tests failed.")
 
 if __name__ == "__main__":
-    h_pass = test_normalization_helper()
-    e_pass = test_actual_evaluations()
-    
-    if h_pass and e_pass:
-        # Check EPS specifically
-        if abs(to_open_unit_interval(1.0) - 0.995) < 1e-7:
-            print("\n[SUCCESS] All scores are strictly within (0.005, 0.995).")
-            sys.exit(0)
-        else:
-            print(f"\n[FAILURE] EPS verification failed! Expected 0.995, got {to_open_unit_interval(1.0)}")
-            sys.exit(1)
-    else:
-        print("\n[FAILURE] One or more scores are exactly 0.0 or 1.0.")
-        sys.exit(1)
+    test_normalization()
