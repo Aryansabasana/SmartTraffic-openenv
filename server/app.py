@@ -309,16 +309,16 @@ def handle_step(history, n, s, e, w, emg, emg_dir, sig, use_llm):
     max_cap = ui_env.env.queue_cap * 4
     
     # 1. Queue Pressure (30%) - Higher queue = lower efficiency
-    pressure_factor = 1.0 - (total_q / max_cap)
+    pressure_factor = max(0.02, min(0.98, 1.0 - (total_q / max_cap)))
     
     # 2. Wait Factor (30%) - Higher avg delay = lower efficiency
     avg_delay = result.info['avg_waiting_time']
-    wait_factor = max(0.0, min(1.0, 1.0 - (avg_delay / 30.0)))
+    wait_factor = max(0.02, min(0.98, 1.0 - (avg_delay / 30.0)))
     
     # 3. Throughput Factor (40%) - Vehicles cleared this step vs capacity
     cleared_this_step = result.info.get('cleared_this_step', 0)
     max_clearance = 16.0 
-    throughput_factor = min(1.0, cleared_this_step / max_clearance)
+    throughput_factor = max(0.02, min(0.98, cleared_this_step / max_clearance))
     
     # Composite Efficiency (Clamped 0.0 - 1.0)
     efficiency = (0.3 * pressure_factor) + (0.3 * wait_factor) + (0.4 * throughput_factor)
@@ -375,10 +375,10 @@ def handle_batch(history):
         })
     score = ui_env.evaluate()
     avg_d = res.info['avg_waiting_time']
-    return batch_history, update_plot(batch_history), to_open_unit_interval(score), "Full Optimization Episode Completed Successfully. Performance verified.", generate_signal_timeline(batch_history), res.info['total_cleared'], f"{avg_d:.1f}s", "EPISODE COMPLETE", "VARIES", generate_imbalance_meter(50)
+    return batch_history, update_plot(batch_history), max(0.02, min(0.98, to_open_unit_interval(score))), "Full Optimization Episode Completed Successfully. Performance verified.", generate_signal_timeline(batch_history), res.info['total_cleared'], f"{avg_d:.1f}s", "EPISODE COMPLETE", "VARIES", generate_imbalance_meter(50)
 
 def handle_reset():
-    return [], 10, 10, 5, 5, False, "ns", "red", generate_intersection_html({'north_queue': 0, 'south_queue': 0, 'east_queue': 0, 'west_queue': 0, 'current_signal': 'red', 'emergency_vehicle_present': False}), update_plot([]), to_open_unit_interval(1.0), "Ready.", generate_signal_timeline([]), 0, "0.0s", "IDLE", "0%", generate_imbalance_meter(0)
+    return [], 10, 10, 5, 5, False, "ns", "red", generate_intersection_html({'north_queue': 0, 'south_queue': 0, 'east_queue': 0, 'west_queue': 0, 'current_signal': 'red', 'emergency_vehicle_present': False}), update_plot([]), to_open_unit_interval(0.5), "Ready.", generate_signal_timeline([]), 0, "0.0s", "IDLE", "0%", generate_imbalance_meter(0)
 
 # --- UI BUILDER ---
 def create_ui():
