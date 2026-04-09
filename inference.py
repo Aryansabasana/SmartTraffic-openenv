@@ -17,7 +17,6 @@ def hard_clamp(x):
         return 0.5
 
 def main():
-    emit("[START] task=bootstrap")
     api_url = os.environ.get("API_BASE_URL")
     api_key = os.environ.get("API_KEY") or os.environ.get("OPENAI_API_KEY")
     is_evaluator_mode = bool(api_url and api_key)
