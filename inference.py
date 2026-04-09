@@ -34,19 +34,17 @@ def main():
         print(f"CRITICAL: {e}", file=sys.stderr)
         agent = DeterministicAgent()
 
-    # In LLM/evaluator mode, use small step budgets to avoid timeout.
-    # The grader scores based on task.evaluate() not step count.
     if is_evaluator_mode:
         tasks_to_run = [
-            ("Easy",   EasyTask(),   20),
-            ("Medium", MediumTask(), 20),
-            ("Hard",   HardTask(),   20),
+            ("easy",   EasyTask(),   20),
+            ("medium", MediumTask(), 20),
+            ("hard",   HardTask(),   20),
         ]
     else:
         tasks_to_run = [
-            ("Easy",   EasyTask(),   100),
-            ("Medium", MediumTask(), 200),
-            ("Hard",   HardTask(),   300),
+            ("easy",   EasyTask(),   100),
+            ("medium", MediumTask(), 200),
+            ("hard",   HardTask(),   300),
         ]
 
     for task_name, task, max_steps in tasks_to_run:
@@ -61,7 +59,7 @@ def main():
                 try:
                     action = agent.get_action(state)
                 except Exception:
-                    action = 1  # fallback action
+                    action = 1
                 result = task.step(action)
                 state = result.state
                 done = result.done
